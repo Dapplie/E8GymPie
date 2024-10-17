@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "E8Gym",
+    "slug": "e8gym",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "assets/**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.julianode.E8Gym"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "assets/logo_1.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.julianode.E8Gym",
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.CAMERA"
+      ]
+    },
+    "web": {
+      "favicon": "assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ced93b04-7cdc-4c75-8656-45422e5453ae"
+      }
+    }
+  }
+}

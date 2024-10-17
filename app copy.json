@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "E8Gym",
+    "slug": "E8Gym",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "assets/**/*"
+    ],
+   
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "assets/logo.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.julianode.E8Gym"
+    },
+    "web": {
+      "favicon": "assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "00b46ddb-672c-4dd8-b8bc-8959d82da16e"
+      }
+    }
+  }
+}
