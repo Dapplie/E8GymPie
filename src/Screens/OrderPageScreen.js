@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-nati
 import * as Print from 'expo-print';
 import * as FileSystem from 'expo-file-system';
 import * as IntentLauncher from 'expo-intent-launcher';
+import { IP_ADDRESS } from '../../config';
 
 const OrderPageScreen = () => {
   const [checkouts, setCheckouts] = useState([]);
@@ -16,7 +17,7 @@ const OrderPageScreen = () => {
 
   const fetchCheckouts = async () => {
     try {
-      const response = await fetch('http://146.190.32.150:5000/checkout');
+      const response = await fetch(`${IP_ADDRESS}/checkout`);
       if (!response.ok) {
         throw new Error('Failed to fetch checkouts');
       }
@@ -29,7 +30,7 @@ const OrderPageScreen = () => {
 
   const fetchBookings = async () => {
     try {
-      const response = await fetch('http://146.190.32.150:5000/ClassBooking');
+      const response = await fetch(`${IP_ADDRESS}/ClassBooking`);
       if (!response.ok) {
         throw new Error('Failed to fetch bookings');
       }

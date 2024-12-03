@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Text, TouchableOpacity, View, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import { IP_ADDRESS } from '../../../config';
 
 const AllBranchClasses = ({ route }) => {
   const { branchId } = route.params;
@@ -12,7 +13,7 @@ const AllBranchClasses = ({ route }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://146.190.32.150:5000/get_classes_for_branch?id=${branchId}`);
+        const response = await axios.get(`${IP_ADDRESS}/get_classes_for_branch?id=${branchId}`);
         setClasses(response.data.classes);
         console.log(response.data.classes);
         setLoading(false);
@@ -49,28 +50,22 @@ const AllBranchClasses = ({ route }) => {
             <Text style={[styles.text, styles.bold]}>Class Name: </Text>
             <Text style={styles.text}>{cls.className}</Text>
           </View>
+
           <View style={styles.row}>
+            <Text style={[styles.text, styles.bold]}>Class Name: </Text>
+            <Text style={styles.text}>{cls.description}</Text>
+          </View>
+
+          <View style={styles.row}>
+            <Text style={[styles.text, styles.bold]}>occupancy: </Text>
+            <Text style={styles.text}>{cls.participants}/{cls.capacity}</Text>
+          </View>
+          {/* <View style={styles.row}>
             <Text style={[styles.text, styles.bold]}>Instructor: </Text>
             <Text style={styles.text}>{cls.instructor}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={[styles.text, styles.bold]}>Time: </Text>
-            {/* <Text style={styles.text}>{new Date(cls.to_date).toLocaleString()}</Text> */}
-            <Text style={styles.text}>
-              {Array.isArray(cls.the_date) && cls.the_date.length > 0 ? (
-                <Text style={styles.text}>
-                  {new Date(cls.the_date[0]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                </Text>
-              ) : (
-                <Text style={styles.text}>No times available</Text>
-              )}
-            </Text>
+          </View> */}
 
-          </View>
-          <View style={styles.row}>
-            <Text style={[styles.text, styles.bold]}>Availability: </Text>
-            <Text style={styles.text}>{cls.availability}</Text>
-          </View>
+
           {/* <View style={styles.row}>
             <Text style={[styles.text, styles.bold]}>Participants: </Text>
             <Text style={styles.text}>{cls.participants}</Text>
@@ -84,9 +79,21 @@ const AllBranchClasses = ({ route }) => {
             <Text style={styles.text}>{cls.description}</Text>
           </View> */}
           <View style={styles.row}>
-            <Text style={[styles.text, styles.bold]}>Days: </Text>
+            <Text style={[styles.text, styles.bold]}>Day: </Text>
             <Text style={styles.text}>{cls.days}</Text>
           </View>
+
+
+          <View style={styles.row}>
+            <Text style={[styles.text, styles.bold]}>Start Time: </Text>
+            {console.log(cls.endDate)}
+            {/* <Text style={styles.text}>{new Date(cls.endDate).toLocaleString()}</Text> */}
+            <Text style={styles.text}>
+              {new Date(cls.startDate).toISOString().split('T')[0]}
+            </Text>
+
+          </View>
+
           <View style={styles.row}>
             <Text style={[styles.text, styles.bold]}>End Time: </Text>
             {console.log(cls.endDate)}
@@ -94,12 +101,41 @@ const AllBranchClasses = ({ route }) => {
             <Text style={styles.text}>
               {new Date(cls.endDate).toISOString().split('T')[0]}
             </Text>
+          </View>
 
-          </View>
-          <View style={styles.row}>
-            <Text style={[styles.text, styles.bold]}>Participants: </Text>
+          {/* <View style={styles.row}>
+            <Text style={[styles.text, styles.bold]}>All Participants: </Text>
             <Text style={styles.text}>{cls.participants}</Text>
+          </View> */}
+
+          <View style={styles.row}>
+            <Text style={[styles.text, styles.bold]}>Time:</Text>
           </View>
+          {Array.isArray(cls.the_date) && cls.the_date.length > 0 ? (
+            cls.the_date.map((time, index) => (
+              <View key={index} style={styles.row}>
+                <Text style={styles.text}>
+                  {new Date(time).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
+                  {', Participants: '}
+                  {cls.TotalParticipants && cls.TotalParticipants[index] != null ? (
+                    <Text style={styles.text}>{cls.TotalParticipants[index]}</Text>
+                  ) : (
+                    <Text style={styles.text}>0</Text>
+                  )}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.text}>No times available</Text>
+          )}
+
+
+
+
           <TouchableOpacity
             style={{
               marginTop: 10,

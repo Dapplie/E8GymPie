@@ -11,9 +11,9 @@ interface OwnNowScreenProps {
 
 const OwnNowScreen: React.FC<OwnNowScreenProps> = ({ style }) => {
   const images = [
-    { source: require('../../assets/own10.jpg'), initialText: 'Minimal Space Required', pressedText: 'You can launch your own E8 gym in a space ranging from 100 to 200 square meters only!' },
+    { source: require('../../assets/branchAjalt.jpg'), initialText: 'Minimal Space Required', pressedText: 'You can launch your own E8 gym in a space ranging from 100 to 200 square meters only!' },
     { source: require('../../assets/own20.jpg'), initialText: 'Low Investment with Quick ROI', pressedText: 'Only with a small investment that covers everything from gym decoration and civil work to flooring, top-notch equipment, access to E8 gym extensive workout database, application, and website, high-quality TVs, a superior sound system, and full support from the E8 team for a successful launch. Including access to E8 application, and website.' },
-    { source: require('../../assets/book.jpg'), initialText: 'Lack of Competition', pressedText: 'Stand out in the fitness industry with a fresh, innovative concept that offers something unique and unmatched by competitors. E8 gym' },
+    { source: require('../../assets/book2.jpeg'), initialText: 'Lack of Competition', pressedText: 'Stand out in the fitness industry with a fresh, innovative concept that offers something unique and unmatched by competitors. E8 gym' },
     { source: require('../../assets/own40.jpeg'), initialText: 'Huge Database With Thousands Of Workouts', pressedText: 'Gain access to all E8 workout database, day by day all over the year, through E8 application, that includes thousands of workouts engineered by Professional athletes, something that will make you stand out in the gyms industry.' },
     { source: require('../../assets/own50.jpeg'), initialText: 'Worlds Best Quality Equipment', pressedText: 'Investmentpeice includes  all range of E8 equipment, including strength and cardio equipment, manufactured exclusively for E8 with highest quality worldwide.' },
     { source: require('../../assets/own60.jpeg'), initialText: 'Wide Range Of Customers', pressedText: 'E8 Gym welcomes a diverse range of customers, from fitness beginners to seasoned athletes, and all Age Groups, providing a training environment for everyone.' }

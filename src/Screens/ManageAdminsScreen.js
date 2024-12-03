@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import axios from 'axios';
+import { IP_ADDRESS } from '../../config';
 
 const ManageAdminsScreen = ({ route, navigation }) => {
   const { refresh } = route.params || Math.floor(Math.random() * 1000);
@@ -11,13 +12,13 @@ const ManageAdminsScreen = ({ route, navigation }) => {
   const [branchimages, setBranchimages] = useState([
     require('../../assets/branch1.jpg'),
     require('../../assets/branch20.jpeg'),
-    require('../../assets/own10.jpg'),
+    require('../../assets/branchAjalt.jpg'),
   ]);
 
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        fetch('http://146.190.32.150:5000/get_admins_list')
+        fetch(`${IP_ADDRESS}/get_admins_list`)
           .then((resp) => {
             if (resp.status === 200) {
               return resp.json();
@@ -49,7 +50,7 @@ const ManageAdminsScreen = ({ route, navigation }) => {
   };
 
   const deleteAdmin = (adminId) => {
-    axios.post('http://146.190.32.150:5000/delete_admin', { _id: adminId })
+    axios.post(`${IP_ADDRESS}/delete_admin`, { _id: adminId })
       .then((res) => {
         // Handle success, e.g., remove the deleted admin from the state
         console.log(res.data);

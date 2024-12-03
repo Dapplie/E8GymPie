@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import axios from 'axios';
+import { IP_ADDRESS } from '../../../config';
 
 const BookedClients = ({ route }) => {
   const { classId } = route.params;
@@ -10,7 +11,7 @@ const BookedClients = ({ route }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.post('http://146.190.32.150:5000/getUserFromBooking', {
+        const response = await axios.post(`${IP_ADDRESS}/getUserFromBooking`, {
           _id: classId
         });
         setClients(response.data);

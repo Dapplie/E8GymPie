@@ -1,7 +1,9 @@
 import { Picker } from '@react-native-picker/picker';
 import { Video } from 'expo-av';
 import React, { useEffect, useState } from 'react';
+import { IP_ADDRESS } from '../../config';
 const { View, Text, StyleSheet, Dimensions, ScrollView, TextInput, Button, TouchableOpacity, TouchableHighlight, Alert } = require('react-native');
+import moment from 'moment-timezone';
 
 
 const validateEmail = (email) => {
@@ -12,7 +14,7 @@ const validateEmail = (email) => {
         );
 };
 const NewAdminScreen = ({ route, navigation }) => {
-    const [branchimages, setBranchimages] = useState([require('../../assets/branch1.jpg'), require('../../assets/branch20.jpeg'), require('../../assets/own10.jpg')])
+    const [branchimages, setBranchimages] = useState([require('../../assets/branch1.jpg'), require('../../assets/branch20.jpeg'), require('../../assets/branchAjalt.jpg')])
     const { refresh } = route.params || Math.floor(Math.random() * 1000);
     const navigateBack = () => {
         navigation.navigate('ManageAdminsScreen');
@@ -30,7 +32,7 @@ const NewAdminScreen = ({ route, navigation }) => {
 
     useEffect(() => {
 
-        fetch('http://146.190.32.150:5000/branches_for_super_admin')
+        fetch(`${IP_ADDRESS}/branches_for_super_admin`)
             .then(res => {
                 if (res.status == 200) {
                     return res.json()
@@ -45,8 +47,60 @@ const NewAdminScreen = ({ route, navigation }) => {
                 Alert.alert('error', err)
             })
     }, [refresh])
+    // const SaveBranch = () => {
+    //     const timeZone = moment.tz.guess();
+    //     console.log(timeZone); // Example output: "America/New_York"
+    //     let errors = false;
+    //     if (!validateEmail(email)) {
+    //         errors = true;
+    //         Alert.alert("E-Mail", "Invalid E-Mail");
+    //     }
+    //     if (password.trim().length <= 5) {
+    //         errors = true;
+    //         Alert.alert("Password", "Password Should be at least 6 Characters");
+    //     }
+    //     if (selectedBranch == null) {
+    //         errors = true;
+    //         Alert.alert("Branch", "Branch Must Be Selected")
+    //     }
+    //     if (errors == false) {
+    //         fetch(
+    //             `${IP_ADDRESS}/save_new_admin_user?name=${name}&phone=${phone}&email=${email}&password=${password}&info=${info}&branch=${selectedBranch}`
+    //         )
+    //             .then((res) => {
+    //                 if (res.status == 200) {
+    //                     return res.json();
+    //                 } else {
+    //                     return undefined;
+    //                 }
+    //             })
+    //             .then((res) => {
+    //                 if (res == undefined) {
+    //                     Alert.alert("Error Creating New Branch");
+    //                 } else {
+    //                     console.log("We Recieved ");
+    //                     console.log(res);
+    //                     navigation.navigate("ManageAdminsScreen", {
+    //                         refresh: Math.floor(Math.random() * 1000),
+    //                     });
+    //                 }
+
+    //                 // setToNavigate(['BranchDetailScreen',branch2])
+    //             })
+    //             .catch((err) => {
+    //                 Alert.alert("Err", err);
+    //             });
+    //     }
+
+    // }
+
     const SaveBranch = () => {
+        const timeZone = moment.tz.guess(); // Automatically detects the admin's time zone
+        console.log(timeZone); // Example output: "America/New_York"
+
         let errors = false;
+
+        // Validation checks
         if (!validateEmail(email)) {
             errors = true;
             Alert.alert("E-Mail", "Invalid E-Mail");
@@ -57,45 +111,44 @@ const NewAdminScreen = ({ route, navigation }) => {
         }
         if (selectedBranch == null) {
             errors = true;
-            Alert.alert("Branch", "Branch Must Be Selected")
+            Alert.alert("Branch", "Branch Must Be Selected");
         }
-        if (errors == false) {
+
+        if (errors === false) {
+            // Include `timezone` in the fetch request
             fetch(
-                `http://146.190.32.150:5000/save_new_admin_user?name=${name}&phone=${phone}&email=${email}&password=${password}&info=${info}&branch=${selectedBranch}`
+                `${IP_ADDRESS}/save_new_admin_user?name=${name}&phone=${phone}&email=${email}&password=${password}&info=${info}&branch=${selectedBranch}&timezone=${encodeURIComponent(timeZone)}`
             )
                 .then((res) => {
-                    if (res.status == 200) {
+                    if (res.status === 200) {
                         return res.json();
                     } else {
                         return undefined;
                     }
                 })
                 .then((res) => {
-                    if (res == undefined) {
-                        Alert.alert("Error Creating New Branch");
+                    if (res === undefined) {
+                        Alert.alert("Error Creating New Admin");
                     } else {
-                        console.log("We Recieved ");
-                        console.log(res);
+                        console.log("We Received: ", res);
                         navigation.navigate("ManageAdminsScreen", {
                             refresh: Math.floor(Math.random() * 1000),
                         });
                     }
-
-                    // setToNavigate(['BranchDetailScreen',branch2])
                 })
                 .catch((err) => {
-                    Alert.alert("Err", err);
+                    Alert.alert("Error", err.toString());
                 });
         }
+    };
 
-    }
 
     // Here We need to open just a form to view and edit the gym branch in question.
     // what needs to be edited is the name, 
     return (
         <View style={styles.container}>
             <Video
-                source={require('../../assets/E8Gymvideo.mp4')}
+                source={require('../../assets/E8Gymvideo2.mp4')}
                 rate={1.0}
                 volume={1.0}
                 isMuted={true}

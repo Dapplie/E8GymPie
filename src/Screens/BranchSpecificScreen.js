@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { Alert, button, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { IP_ADDRESS } from '../../config';
 
 
 
@@ -102,7 +103,7 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
         'capacity':capacity
     */
     try {
-      fetch('http://146.190.32.150:5000/createClass', {
+      fetch(`${IP_ADDRESS}/createClass`, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
@@ -123,7 +124,7 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
             setClassName('');
             setInstructor('');
             setSchedule('');
-            Alert.alert('Success', 'Class created successfully');
+            Alert.alert('Success', 'Class created successfully.');
             setShowDatePicker(false);
             setShowTimePicker(false);
             navigation.navigate('BranchSpecificScreen', { branch, refresh: Math.random() });
@@ -143,7 +144,7 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
   };
   const deleteClass = async (id) => {
     try {
-      await axios.delete('http://146.190.32.150:5000/delete_class', {
+      await axios.delete(`${IP_ADDRESS}/delete_class`, {
         data: { _id: id }
       });
       // setClasses(classes.filter(item => item._id !== id));
@@ -175,7 +176,7 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
                 }}
                 placeholder="Class Name"
                 placeholderTextColor="#757575"
-                value={className}
+                value={className} 
                 onChangeText={(text) => setClassName(text)}
               />
             </View>
@@ -357,7 +358,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(`http://146.190.32.150:5000/BranchSpecficScreen?id=${branch}`);
+      const response = await fetch(`${IP_ADDRESS}/BranchSpecficScreen?id=${branch}`);
       const data = await response.json();
       // const filteredData = data.filter(branch => branch.branchID === '1');
       if (data.hasOwnProperty("branch")) {
@@ -366,7 +367,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
 
       console.log("We Got Data Specific Screen 2")
       console.log(branchData)
-      fetch(`http://146.190.32.150:5000/get_classes_for_branch?id=${branch}`)
+      fetch(`${IP_ADDRESS}/get_classes_for_branch?id=${branch}`)
         .then(res => {
           if (res.status == 200) {
             return res.json()
@@ -389,7 +390,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
     try {
       // Include the branch ID in the updated data
       updatedBranchData.branchID = '1'; // Update the branch ID to 1
-      const response = await fetch('http://146.190.32.150:5000/updateBranchDetails', {
+      const response = await fetch(`${IP_ADDRESS}/updateBranchDetails`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -423,7 +424,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
     try {
       // Post class details to the server
       console.error(classDetails)
-      const response = await axios.post('http://146.190.32.150:5000/createClass', classDetails);
+      const response = await axios.post(`${IP_ADDRESS}/createClass`, classDetails);
 
       if (response.status === 200) {
         // Show success message
@@ -442,7 +443,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
   }
   const deleteClass = async (id) => {
     try {
-      await axios.delete('http://146.190.32.150:5000/delete_class', {
+      await axios.delete(`${IP_ADDRESS}/delete_class`, {
         data: { _id: id }
       });
       setClasses(classes.filter(item => item._id !== id));
@@ -473,7 +474,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
           activeOpacity={1}
         >
           <Image
-            source={require("../../assets/branch1.jpg")}
+            source={require("../../assets/branchAjalt.jpg")}
             style={styles.branchImage}
           />
           <Text style={styles.branchName}>{branchData.name}</Text>
@@ -515,6 +516,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
               color: '#fff',
               textAlign: 'center',
               fontWeight: 'bold',
+              marginTop:5,
               marginBottom: 20,
             }}
           >
@@ -576,36 +578,56 @@ const BranchSpecificScreen = ({ route, navigation }) => {
                   >
                     {the_class.className}
                   </Text>
-                  <Text style={{ color: '#fff', marginTop: 5 }}>
+                  {/* <Text style={{ color: '#fff', marginTop: 5 }}>
                     Instructor: {the_class.instructor}
-                  </Text>
+                  </Text> */}
                 </View>
               </TouchableOpacity>
-              <View style={{ borderTopWidth: 1, borderTopColor: '#303030', paddingTop: 10 }}>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 5 }}>
-                  <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
-                    Every {the_class.days} : </Text>
-                  {Array.isArray(the_class.the_date) && the_class.the_date.length > 0 ? (
-                    <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
-                      @{new Date(the_class.the_date[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })
-                    }
-                    </Text>
-                  ) : (
-                    <Text style={{ fontSize: 14, color: '#E0E0E0' }}>No times available</Text>
-                  )}
-                  {/* {new Date(the_class.the_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} */}
-                </View>
-                <Text style={{ fontSize: 12, color: '#E0E0E0', marginBottom: 5 }}>Participants: {the_class.participants}/{the_class.capacity}</Text>
-          
-                  {/* Star and end date */}
-                <Text style={{ fontSize: 12, color: '#E0E0E0', marginBottom: 5 }}>
+              <View style={{ borderTopWidth: 1, borderTopColor: '#303030', paddingTop: 5 }}>
+
+                
+                <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
+                    Description: {the_class.description}  </Text>
+
+
+                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>occupancy: {the_class.participants}/{the_class.capacity}</Text>
+                
+                {/* Star and end date */}
+                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
                   Start Date: {new Date(the_class.startDate).toLocaleDateString()}
                 </Text>
-                <Text style={{ fontSize: 12, color: '#E0E0E0', marginBottom: 8 }}>
+                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
                   End Date: {new Date(the_class.endDate).toLocaleDateString()}
                 </Text>
 
-                <Text style={{ fontSize: 12,marginBottom: 5, fontWeight: 'bold', color: the_class.availability === 'Locked' ? 'orange' : ((the_class.participants < the_class.capacity) && the_class.availability === 'Available') ? 'green' : 'red' }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                  <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
+                    Day: {the_class.days}  </Text>
+
+                  {/* {new Date(the_class.the_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} */}
+                </View>
+
+                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>Time:</Text>
+                {Array.isArray(the_class.the_date) && the_class.the_date.length > 0 ? (
+                  the_class.the_date.map((time, index) => (
+                    <Text key={index} style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
+                      {new Date(time).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
+                      {', Participants: '}
+                      {the_class.TotalParticipants && the_class.TotalParticipants[index] != null
+                        ? the_class.TotalParticipants[index]
+                        : 0}
+                    </Text>
+                  ))
+                ) : (
+                  <Text style={{ fontSize: 14, color: '#E0E0E0' }}>No times available</Text>
+                )}
+
+
+                <Text style={{ fontSize: 12,marginTop:5, marginBottom: 5, fontWeight: 'bold', color: the_class.availability === 'Locked' ? 'orange' : ((the_class.participants < the_class.capacity) && the_class.availability === 'Available') ? 'green' : 'red' }}>
                   {the_class.availability === 'Locked' ? 'Locked' : ((the_class.participants < the_class.capacity) && the_class.availability === 'Available') ? 'Available' : 'Full'}
                 </Text>
                 {/* Faysal  */}

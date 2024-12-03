@@ -1,6 +1,8 @@
 import { Picker } from "@react-native-picker/picker";
 import { Video } from "expo-av";
 import React, { useEffect, useState } from "react";
+import { IP_ADDRESS } from "../../config";
+import moment from 'moment-timezone';
 const {
   View,
   Text,
@@ -41,7 +43,7 @@ const AdminDetailScreen = ({ route, navigation }) => {
   const [info, setInfo] = useState(admin.info);
 
   useEffect(() => {
-    fetch("http://146.190.32.150:5000/branches_for_super_admin")
+    fetch(`${IP_ADDRESS}/branches_for_super_admin`)
       .then((res) => {
         if (res.status == 200) {
           return res.json();
@@ -64,45 +66,89 @@ const AdminDetailScreen = ({ route, navigation }) => {
       }
     }))
   }, [branches])
+
+
   const SaveBranch = () => {
+    // Detect the admin's time zone
+    const timeZone = moment.tz.guess(); // Automatically detects the admin's time zone
+    console.log("Detected Timezone:", timeZone);
+
+    // Validate input fields
     if (!validateEmail(email)) {
       Alert.alert("E-Mail", "Invalid E-Mail");
-    } else if (password.trim().length <= 6) {
-      Alert.alert("Password", "Password SHould be at least 6 Characters");
+    } else if (password.trim().length < 6) {
+      Alert.alert("Password", "Password Should be at least 6 Characters");
     } else if (selectedBranch == null) {
       Alert.alert("Branch", "Branch Must Be Selected");
     } else {
+      // Make the API request, including the timeZone in the URL
       fetch(
-        `http://146.190.32.150:5000/update_admin_user?id=${admin._id}&name=${name}&phone=${phone}&email=${email}&password=${password}&info=${info}&branch=${selectedBranch}`
+        `${IP_ADDRESS}/update_admin_user?id=${admin._id}&name=${name}&phone=${phone}&email=${email}&password=${password}&info=${info}&branch=${selectedBranch}&timezone=${encodeURIComponent(timeZone)}`
       )
         .then((res) => {
-          if (res.status == 200) {
+          if (res.status === 200) {
             return res.json();
           } else {
             return undefined;
           }
         })
         .then((res) => {
-          if (res == undefined) {
+          if (res === undefined) {
             Alert.alert("Update", "Error Updating Admin User");
           } else {
-            console.log("We Recieved ");
-            console.log(res);
+            console.log("We Received ", res);
             navigation.navigate("ManageAdminsScreen", {
               refresh: Math.floor(Math.random() * 1000),
             });
           }
-
-          // setToNavigate(['BranchDetailScreen',branch2])
         })
         .catch((err) => {
-          Alert.alert("Err", err);
+          Alert.alert("Err", err.toString());
         });
     }
   };
+
+
+
+  // const SaveBranch = () => {
+  //   if (!validateEmail(email)) {
+  //     Alert.alert("E-Mail", "Invalid E-Mail");
+  //   } else if (password.trim().length < 6) {
+  //     Alert.alert("Password", "Password Should be at least 6 Characters");
+  //   } else if (selectedBranch == null) {
+  //     Alert.alert("Branch", "Branch Must Be Selected");
+  //   } else {
+  //     fetch(
+  //       `${IP_ADDRESS}/update_admin_user?id=${admin._id}&name=${name}&phone=${phone}&email=${email}&password=${password}&info=${info}&branch=${selectedBranch}`
+  //     )
+  //       .then((res) => {
+  //         if (res.status == 200) {
+  //           return res.json();
+  //         } else {
+  //           return undefined;
+  //         }
+  //       })
+  //       .then((res) => {
+  //         if (res == undefined) {
+  //           Alert.alert("Update", "Error Updating Admin User");
+  //         } else {
+  //           console.log("We Recieved ");
+  //           console.log(res);
+  //           navigation.navigate("ManageAdminsScreen", {
+  //             refresh: Math.floor(Math.random() * 1000),
+  //           });
+  //         }
+
+  //         // setToNavigate(['BranchDetailScreen',branch2])
+  //       })
+  //       .catch((err) => {
+  //         Alert.alert("Err", err);
+  //       });
+  //   }
+  // };
   return (
-    <View style={{ backgroundColor: 'black' }}>
-      <View contentContainerStyle={styles.container}>
+    <View style={{ backgroundColor: 'black', flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.container}>
         {/* <Video
         source={require('../../assets/E8Gymvideo.mp4')}
         rate={1.0}
@@ -112,7 +158,7 @@ const AdminDetailScreen = ({ route, navigation }) => {
         shouldPlay
         isLooping
         style={styles.videoBackground}
-      /> */}
+       /> */}
         <View style={styles.formContainer}>
           <Text style={styles.formTitle}> Editing Admin </Text>
           <Text style={{
@@ -202,7 +248,7 @@ const AdminDetailScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
-      </View></View>
+      </ScrollView></View>
   );
 };
 

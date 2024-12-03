@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "E8Gym",
-    "slug": "e8gym",
+    "name": "E8GYM",
+    "slug": "e8gym-cpmcgnta2edqffxegt3",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "assets/icon.png",
@@ -28,7 +28,9 @@
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE",
         "android.permission.SYSTEM_ALERT_WINDOW",
-        "android.permission.CAMERA"
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
       ]
     },
     "web": {
@@ -46,8 +48,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "ced93b04-7cdc-4c75-8656-45422e5453ae"
+        "projectId": "9557c681-321a-4c6d-a6d2-56237d3d1578"
       }
     }
   }
 }
+

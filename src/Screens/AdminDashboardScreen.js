@@ -14,7 +14,7 @@ const AdminDashboardScreen = ({ route, navigation }) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <ImageBackground source={require('../../assets/adminpic1.jpg')} style={styles.backgroundImage}>
+      <ImageBackground source={require('../../assets/admin22.png')} style={styles.backgroundImage}>
         <View style={styles.overlay} />
         <View style={styles.container}>
           <Text style={styles.title}>{admin.name}</Text>

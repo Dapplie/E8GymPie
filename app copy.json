@@ -20,7 +20,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "assets/logo.png",
+        "foregroundImage": "assets/logo2.jpg",
         "backgroundColor": "#ffffff"
       },
       "package": "com.julianode.E8Gym"

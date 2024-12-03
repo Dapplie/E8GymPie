@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Header from './Header';
+import { IP_ADDRESS } from '../../config';
 
 const PurchaseInfoScreen = ({ route }) => {
   const [purchasedItems, setPurchasedItems] = useState([]);
@@ -18,7 +19,7 @@ const PurchaseInfoScreen = ({ route }) => {
 
   const fetchBranchesAndClasses = async() => {
     try {
-      fetch("http://146.190.32.150:5000/getBranchesAndClasses")
+      fetch(`${IP_ADDRESS}/getBranchesAndClasses`)
       .then((response) => response.json())
       .then((data) => {
         console.log('Successful Data Fetching');
@@ -30,7 +31,7 @@ const PurchaseInfoScreen = ({ route }) => {
   };
   const fetchBranches = async () => {
     try {
-      fetch("http://146.190.32.150:5000/BranchList")
+      fetch(`${IP_ADDRESS}/BranchList`)
       .then(response => response.json())
       .then((data) => {
         // console.log('Successful branch call');
@@ -48,7 +49,7 @@ const PurchaseInfoScreen = ({ route }) => {
   const fetchData = async () => {
     try {
       const userId = await AsyncStorage.getItem('userId');
-      fetch(`http://146.190.32.150:5000/PurchaseInfoScreen?userid=${userId}`)
+      fetch(`${IP_ADDRESS}/PurchaseInfoScreen?userid=${userId}`)
         .then(res => res.json())
         .then(data => {
           // console.log( data);
@@ -64,7 +65,7 @@ const PurchaseInfoScreen = ({ route }) => {
   const fetchClasses = async () => {
     try {
       const userId = await AsyncStorage.getItem('userId');
-      fetch(`http://146.190.32.150:5000/PurchaseInfoScreenBooking?userid=${userId}`)
+      fetch(`${IP_ADDRESS}/PurchaseInfoScreenBooking?userid=${userId}`)
         .then(res => res.json())
         .then(data => {
           console.log('The Booking Data We Got:', data);

@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Button } from 'react-native';
 import Header from '../Screens/Header';
+import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
+import { IP_ADDRESS } from '../../config';
 
-const DashboardScreen = ({route, navigation}) => {
+const DashboardScreen = ({ route, navigation }) => {
   const [isFirstImageHovered, setIsFirstImageHovered] = useState(false);
   const [isSecondImageHovered, setIsSecondImageHovered] = useState(false);
   const [bmiUnit, setBmiUnit] = useState('metric');
@@ -12,12 +15,12 @@ const DashboardScreen = ({route, navigation}) => {
   const [bmiHeightFeet, setBmiHeightFeet] = useState('');
   const [bmiHeightInch, setBmiHeightInch] = useState('');
   const [bmiResult, setBmiResult] = useState(null);
-  const {fullName,email,uid,branch}=route.params;
+  const { fullName, email, uid, branch } = route.params;
   console.log("DashBoardScreen")
   console.log(route.params)
   // get the route.params and make sure you have email and fullName here 
-  
- // in your react native what syntax you use to get the params ?
+
+  // in your react native what syntax you use to get the params ?
   const handleFirstImagePressIn = () => {
     setIsFirstImageHovered(true);
   };
@@ -37,15 +40,15 @@ const DashboardScreen = ({route, navigation}) => {
   const handleBookNowPress = () => {
     console.log(`DashBoard ${fullName} &&  ${email}`);
     navigation.navigate('ClassScheduleScreen', { branch });
-  
+
     // Log branch every 2 seconds
     // setInterval(() => {
     //   console.log(branch);
     // }, 2000);
-  
+
     console.log("Book Now button pressed");
   };
-  
+
 
   const handleOwnNowPress = () => {
     navigation.navigate('OwnNow');
@@ -53,8 +56,8 @@ const DashboardScreen = ({route, navigation}) => {
   };
 
   const handleCalculateBMI = () => {
-    // Implement the BMI calculation logic here
     let weight, height;
+
     if (bmiUnit === 'metric') {
       weight = parseFloat(bmiWeightMetric);
       height = parseFloat(bmiHeightMetric) / 100; // Convert height to meters
@@ -67,7 +70,6 @@ const DashboardScreen = ({route, navigation}) => {
     }
 
     if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) {
-      // Handle invalid input
       console.log("Invalid input for BMI calculation");
       return;
     }
@@ -78,9 +80,9 @@ const DashboardScreen = ({route, navigation}) => {
     let status;
     if (bmi < 18.5) {
       status = 'Underweight';
-    } else if (bmi < 25) {
+    } else if (bmi >= 18.5 && bmi < 25) {
       status = 'Normal';
-    } else if (bmi < 30) {
+    } else if (bmi >= 25 && bmi < 30) {
       status = 'Overweight';
     } else {
       status = 'Obese';
@@ -88,24 +90,25 @@ const DashboardScreen = ({route, navigation}) => {
 
     setBmiResult({ bmi, status });
   };
+
   return (
     <ScrollView style={styles.container}>
       <Header />
-      <View style={{ backgroundColor: 'black', flex: 1,marginBottom:40, alignItems: 'center', justifyContent: 'center' }}>
-  <Image
-    source={require('../../assets/own.jpg')}
-    style={{ width: 200, height: 200, marginBottom: 20 }}
-    resizeMode="contain"
-  />
-  <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
-    Welcome to Endurance Eight!
-  </Text>
-  <Text style={{ color: 'white', textAlign: 'center', paddingHorizontal: 20 }}>
-    E8 gym is a Circuit-based, general strength and condition training with aim to improve overall strength, endurance, flexibility, coordination, and balance, while also reducing the risk of injury. Our workouts are suitable for multiple age groups and all fitness levels.
-  </Text>
-</View>
+      <View style={{ backgroundColor: 'black', flex: 1, marginBottom: 40, alignItems: 'center', justifyContent: 'center' }}>
+        <Image
+          source={require('../../assets/own33.jpg')}
+          style={{ width: 200, height: 200, marginBottom: 20 }}
+          resizeMode="contain"
+        />
+        <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
+          Welcome to Endurance Eight!
+        </Text>
+        <Text style={{ color: 'white', textAlign: 'center', paddingHorizontal: 20 }}>
+          E8 gym is a Circuit-based, general strength and condition training with aim to improve overall strength, endurance, flexibility, coordination, and balance, while also reducing the risk of injury. Our workouts are suitable for multiple age groups and all fitness levels.
+        </Text>
+      </View>
 
-     {/* <View style={styles.additionalContainer}>
+      {/* <View style={styles.additionalContainer}>
         <View style={styles.additionalContent}>
           <Text style={styles.additionalSubTitle}>E8 Online</Text>
           <Text style={styles.additionalTitle}>Our Classes</Text>
@@ -163,179 +166,185 @@ const DashboardScreen = ({route, navigation}) => {
         />
       </View> */}
 
-<View style={{ flexDirection: 'row',borderRadius: 10, borderWidth: 1, borderColor: 'white', justifyContent: 'space-between', backgroundColor: '#1a1a1a', padding: 20, borderRadius: 10, marginBottom: 20 }}>
-  <View style={{ flex: 1 }}>
-    <Text style={{ color: '#ffffff', fontSize: 24, fontWeight: 'bold', marginBottom: 10 }}>Book</Text>
-    <Text style={{ color: '#ffffff', fontSize: 16 }}>Your class</Text>
-    <TouchableOpacity onPress={handleBookNowPress} style={{ backgroundColor: '#ffffff', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 5, marginTop: 10, alignSelf: 'flex-start' }}>
-      <Text style={{ color: '#1a1a1a', fontSize: 16, fontWeight: 'bold' }}>Book Now</Text>
-    </TouchableOpacity>
-  </View>
-  <Image
-    source={require('../../assets/book.jpg')}
-    style={{ width: '50%', aspectRatio: 1, borderRadius: 10 }}
-    resizeMode="contain"
-  />
-</View>
-<View style={{ flexDirection: 'row',borderRadius: 10, borderWidth: 1, borderColor: 'white', justifyContent: 'space-between', backgroundColor: '#1a1a1a', padding: 20, borderRadius: 10 }}>
-  <View style={{ flex: 1 }}>
-    <Text style={{ color: '#ffffff', fontSize: 24, fontWeight: 'bold', marginBottom: 10 }}>Own</Text>
-    <Text style={{ color: '#ffffff', fontSize: 16 }}>An E8 Gym</Text>
-    <TouchableOpacity onPress={handleOwnNowPress} style={{ backgroundColor: '#ffffff', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 5, marginTop: 10, alignSelf: 'flex-start' }}>
-      <Text style={{ color: '#1a1a1a', fontSize: 16, fontWeight: 'bold' }}>Own Now</Text>
-    </TouchableOpacity>
-  </View>
-  <Image
-    source={require('../../assets/own.jpg')}
-    style={{ width: '50%', aspectRatio: 1, borderRadius: 10 }}
-    resizeMode="contain"
-  />
-</View>
-
-
-
-
-
-{/* BMI Calculator */}
-<View style={{ backgroundColor: '#111',marginTop:20,marginBottom:40, padding: 20, borderRadius: 10, borderWidth: 1, borderColor: 'white' }}>
-  {/* Header */}
-  <View style={{ marginBottom: 20 }}>
-    <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold', marginBottom: 5 }}>Calculate Your BMI</Text>
-    <Text style={{ color: 'white', fontSize: 16 }}>Body Mass Index</Text>
-  </View>
-
-  {/* Form */}
-  <View style={{ marginBottom: 20 }}>
-    {/* Metric or Imperial Unit Selector */}
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
-      <TouchableOpacity
-        style={{
-          backgroundColor: 'transparent',
-          padding: 10,
-          borderWidth: 1,
-          borderRadius: 5,
-          borderColor: 'white',
-          marginRight: 10,
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        onPress={() => setBmiUnit('metric')}
-      >
-        <Text style={{ color: 'white' }}>Metric Units</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={{
-          backgroundColor: 'transparent',
-          padding: 10,
-          borderWidth: 1,
-          borderRadius: 5,
-          borderColor: 'white',
-          marginLeft: 10,
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-        onPress={() => setBmiUnit('imperial')}
-      >
-        <Text style={{ color: 'white' }}>Imperial Units</Text>
-      </TouchableOpacity>
-    </View>
-
-    {/* Weight and Height input fields based on the selected unit */}
-    {bmiUnit === 'metric' ? (
-      <>
-        <View style={{ marginBottom: 10 }}>
-          <Text style={{ color: 'white', marginBottom:5 }}>Weight (kg)</Text>
-          <View style={{ backgroundColor: 'transparent', borderWidth: 1, borderColor: 'white', borderRadius: 5 }}>
-            <TextInput
-              placeholder="Enter weight"
-              value={bmiWeightMetric}
-              onChangeText={setBmiWeightMetric}
-              keyboardType="numeric"
-              style={{ color: 'white', padding: 10 }}
-              placeholderTextColor="white"
-            />
-          </View>
+      <View style={{ flexDirection: 'row', borderRadius: 10, borderWidth: 1, borderColor: 'white', justifyContent: 'space-between', backgroundColor: '#1a1a1a', padding: 20, borderRadius: 10, marginBottom: 20 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: '#ffffff', fontSize: 24, fontWeight: 'bold', marginBottom: 10 }}>Book</Text>
+          <Text style={{ color: '#ffffff', fontSize: 16 }}>Your class</Text>
+          <TouchableOpacity onPress={handleBookNowPress} style={{ backgroundColor: '#ffffff', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 5, marginTop: 10, alignSelf: 'flex-start' }}>
+            <Text style={{ color: '#1a1a1a', fontSize: 16, fontWeight: 'bold' }}>Book Now</Text>
+          </TouchableOpacity>
         </View>
-        <View style={{ marginBottom: 10 }}>
-          <Text style={{ color: 'white',marginBottom:5 }}>Height (cm)</Text>
-          <View style={{ backgroundColor: 'transparent', borderWidth: 1, borderColor: 'white', borderRadius: 5 }}>
-            <TextInput
-              placeholder="Enter height"
-              value={bmiHeightMetric}
-              onChangeText={setBmiHeightMetric}
-              keyboardType="numeric"
-              style={{ color: 'white', padding: 10 }}
-              placeholderTextColor="white"
-            />
-          </View>
+        <Image
+          source={require('../../assets/book2.jpeg')}
+          style={{ width: '50%', aspectRatio: 1.5, borderRadius: 15 }} //was 1 and 10 NOV 29
+          resizeMode="contain"
+        />
+      </View>
+      <View style={{ flexDirection: 'row', borderRadius: 10, borderWidth: 1, borderColor: 'white', justifyContent: 'space-between', backgroundColor: '#1a1a1a', padding: 20, borderRadius: 10 }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: '#ffffff', fontSize: 24, fontWeight: 'bold', marginBottom: 10 }}>Own</Text>
+          <Text style={{ color: '#ffffff', fontSize: 16 }}>An E8 Gym</Text>
+          <TouchableOpacity onPress={handleOwnNowPress} style={{ backgroundColor: '#ffffff', paddingVertical: 10, paddingHorizontal: 20, borderRadius: 5, marginTop: 10, alignSelf: 'flex-start' }}>
+            <Text style={{ color: '#1a1a1a', fontSize: 16, fontWeight: 'bold' }}>Own Now</Text>
+          </TouchableOpacity>
         </View>
-      </>
-    ) : (
-      <>
-        <View style={{ marginBottom: 10 }}>
-          <Text style={{ color: 'white',marginBottom:5 }}>Weight (lbs)</Text>
-          <View style={{ backgroundColor: 'transparent', borderWidth: 1, borderColor: 'white', borderRadius: 5 }}>
-            <TextInput
-              placeholder="Enter weight"
-              value={bmiWeightImperial}
-              onChangeText={setBmiWeightImperial}
-              keyboardType="numeric"
-              style={{ color: 'white', padding: 10 }}
-              placeholderTextColor="white"
-            />
-          </View>
+        <Image
+          source={require('../../assets/own2.jpg')}
+          style={{ width: '50%', aspectRatio: 1.5, borderRadius: 15 }}
+          resizeMode="contain"
+        />
+      </View>
+
+
+
+
+
+      {/* BMI Calculator */}
+      <View style={{ backgroundColor: '#111', marginTop: 20, marginBottom: 40, padding: 20, borderRadius: 10, borderWidth: 1, borderColor: 'white' }}>
+        {/* Header */}
+        <View style={{ marginBottom: 20 }}>
+          <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold', marginBottom: 5 }}>Calculate Your BMI</Text>
+          <Text style={{ color: 'white', fontSize: 16 }}>Body Mass Index</Text>
         </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
-          <View style={{ flex: 1, marginRight: 10,  }}>
-            <Text style={{ color: 'white', marginBottom:5 }}>Height (feet)</Text>
-            <View style={{ backgroundColor: 'transparent', borderWidth: 1, borderColor: 'white', borderRadius: 5 }}>
-              <TextInput
-                placeholder="Enter feet"
-                value={bmiHeightFeet}
-                onChangeText={setBmiHeightFeet}
-                keyboardType="numeric"
-                style={{ color: 'white', padding: 10 }}
-                placeholderTextColor="white"
-              />
-            </View>
+
+        {/* Form */}
+        <View style={{ marginBottom: 20 }}>
+          {/* Metric or Imperial Unit Selector */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+            <TouchableOpacity
+              style={{
+                backgroundColor: 'transparent',
+                padding: 10,
+                borderWidth: 1,
+                borderRadius: 5,
+                borderColor: 'white',
+                marginRight: 10,
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onPress={() => setBmiUnit('metric')}
+            >
+              <Text style={{ color: 'white' }}>Metric Units</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                backgroundColor: 'transparent',
+                padding: 10,
+                borderWidth: 1,
+                borderRadius: 5,
+                borderColor: 'white',
+                marginLeft: 10,
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onPress={() => setBmiUnit('imperial')}
+            >
+              <Text style={{ color: 'white' }}>Imperial Units</Text>
+            </TouchableOpacity>
           </View>
-          <View style={{ flex: 1, marginLeft: 10 }}>
-            <Text style={{ color: 'white',marginBottom:5 }}>Height (inches)</Text>
-            <View style={{ backgroundColor: 'transparent', borderWidth: 1, borderColor: 'white', borderRadius: 5 }}>
-              <TextInput
-                placeholder="Enter inches"
-                value={bmiHeightInch}
-                onChangeText={setBmiHeightInch}
-                keyboardType="numeric"
-                style={{ color: 'white', padding: 10 }}
-                placeholderTextColor="white"
-              />
-            </View>
-          </View>
+
+          {/* Weight and Height input fields based on the selected unit */}
+          {bmiUnit === 'metric' ? (
+            <>
+              <View style={{ marginBottom: 10 }}>
+                <Text style={{ color: 'white', marginBottom: 5 }}>Weight (kg)</Text>
+                <View style={{ backgroundColor: 'transparent', borderWidth: 1, borderColor: 'white', borderRadius: 5 }}>
+                  <TextInput
+                    placeholder="Enter weight"
+                    value={bmiWeightMetric}
+                    onChangeText={setBmiWeightMetric}
+                    keyboardType="numeric"
+                    style={{ color: 'white', padding: 10 }}
+                    placeholderTextColor="white"
+                  />
+                </View>
+              </View>
+              <View style={{ marginBottom: 10 }}>
+                <Text style={{ color: 'white', marginBottom: 5 }}>Height (cm)</Text>
+                <View style={{ backgroundColor: 'transparent', borderWidth: 1, borderColor: 'white', borderRadius: 5 }}>
+                  <TextInput
+                    placeholder="Enter height"
+                    value={bmiHeightMetric}
+                    onChangeText={setBmiHeightMetric}
+                    keyboardType="numeric"
+                    style={{ color: 'white', padding: 10 }}
+                    placeholderTextColor="white"
+                  />
+                </View>
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={{ marginBottom: 10 }}>
+                <Text style={{ color: 'white', marginBottom: 5 }}>Weight (lbs)</Text>
+                <View style={{ backgroundColor: 'transparent', borderWidth: 1, borderColor: 'white', borderRadius: 5 }}>
+                  <TextInput
+                    placeholder="Enter weight"
+                    value={bmiWeightImperial}
+                    onChangeText={setBmiWeightImperial}
+                    keyboardType="numeric"
+                    style={{ color: 'white', padding: 10 }}
+                    placeholderTextColor="white"
+                  />
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                <View style={{ flex: 1, marginRight: 10, }}>
+                  <Text style={{ color: 'white', marginBottom: 5 }}>Height (feet)</Text>
+                  <View style={{ backgroundColor: 'transparent', borderWidth: 1, borderColor: 'white', borderRadius: 5 }}>
+                    <TextInput
+                      placeholder="Enter feet"
+                      value={bmiHeightFeet}
+                      onChangeText={setBmiHeightFeet}
+                      keyboardType="numeric"
+                      style={{ color: 'white', padding: 10 }}
+                      placeholderTextColor="white"
+                    />
+                  </View>
+                </View>
+                <View style={{ flex: 1, marginLeft: 10 }}>
+                  <Text style={{ color: 'white', marginBottom: 5 }}>Height (inches)</Text>
+                  <View style={{ backgroundColor: 'transparent', borderWidth: 1, borderColor: 'white', borderRadius: 5 }}>
+                    <TextInput
+                      placeholder="Enter inches"
+                      value={bmiHeightInch}
+                      onChangeText={setBmiHeightInch}
+                      keyboardType="numeric"
+                      style={{ color: 'white', padding: 10 }}
+                      placeholderTextColor="white"
+                    />
+                  </View>
+                </View>
+              </View>
+            </>
+          )}
+
+          {/* Calculate button */}
+          <TouchableOpacity onPress={handleCalculateBMI} style={{ backgroundColor: 'white', padding: 10, borderRadius: 5, alignItems: 'center' }}>
+            <Text style={{ color: '#111', fontWeight: 'bold' }}>CALCULATE</Text>
+          </TouchableOpacity>
         </View>
-      </>
-    )}
 
-    {/* Calculate button */}
-    <TouchableOpacity onPress={handleCalculateBMI} style={{ backgroundColor: 'white', padding: 10, borderRadius: 5, alignItems: 'center' }}>
-      <Text style={{ color: '#111', fontWeight: 'bold' }}>CALCULATE</Text>
-    </TouchableOpacity>
-  </View>
 
-  {/* Result */}
-  {bmiResult && (
-    <View style={{ borderTopWidth: 1, borderTopColor: 'white', paddingTop: 20 }}>
-      <Text style={{ color: 'white', fontSize: 18, marginBottom: 10 }}>Your BMI is: {bmiResult.bmi.toFixed(2)}</Text>
-      <Text style={{ color: 'white', fontSize: 18, marginBottom: 10 }}>
-        Your weight status is: {bmiResult.status === 'Obese' ? 'Obese' : bmiResult.status === 'Normal' ? 'Normal' : 'Underweight'}
-      </Text>
-    </View>
-  )}
-</View>
+        {/* Result */}
+        {bmiResult && (
+          <View style={{ borderTopWidth: 1, borderTopColor: 'white', paddingTop: 20 }}>
+            <Text style={{ color: 'white', fontSize: 18, marginBottom: 10 }}>
+              Your BMI is: {parseFloat(bmiResult.bmi).toFixed(2)}
+            </Text>
+            <Text style={{ color: 'white', fontSize: 18, marginBottom: 10 }}>
+              Your weight status is:
+              {bmiResult.status === 'Obese' ? 'Obese' :
+                bmiResult.status === 'Overweight' ? 'Overweight' :
+                  bmiResult.status === 'Normal' ? 'Normal' : 'Underweight'}
+            </Text>
+          </View>
+        )}
+      </View>
 
-             </ScrollView>
+    </ScrollView>
   );
 };
 
@@ -376,7 +385,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: 'black',
     fontSize: 15,
-fontWeight:'bold',
+    fontWeight: 'bold',
   },
   welcomeImage: {
     width: 150,
@@ -482,7 +491,7 @@ fontWeight:'bold',
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop:45,
+    marginTop: 45,
   },
   buyNowText: {
     color: '#FFF',
@@ -497,7 +506,7 @@ fontWeight:'bold',
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop:45,
+    marginTop: 45,
   },
   bookNowText: {
     color: '#FFF',
@@ -511,7 +520,7 @@ fontWeight:'bold',
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop:45,
+    marginTop: 45,
   },
   ownNowText: {
     color: '#FFF',
@@ -550,11 +559,11 @@ fontWeight:'bold',
     borderWidth: 1,
     borderColor: '#888',
     borderRadius: 5,
-    marginRight:3,
+    marginRight: 3,
   },
   bmiRadioOptionSelected: {
     backgroundColor: 'lightgrey',
-    color:'white'
+    color: 'white'
   },
   inputField: {
     borderWidth: 1,

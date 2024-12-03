@@ -1,5 +1,6 @@
 import axios from 'axios'; // Import Axios
 import React, { useState } from 'react';
+import { IP_ADDRESS } from '../../config';
 import {
     Alert,
     Image,
@@ -33,7 +34,7 @@ const ContactForm = () => {
         return;
       }
 
-      const response = await axios.post('http://146.190.32.150:5000/ContactUs', {
+      const response = await axios.post(`${IP_ADDRESS}/ContactUs`, {
         fullName: fullName,
         email: email,
         phone: phone,

@@ -1,6 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
+import { Picker } from '@react-native-picker/picker';
 import { Alert, Button, Modal, SafeAreaView, ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { IP_ADDRESS } from '../../config';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
+
+
+
 
 const ClassScheduleScreen = ({ route, navigation }) => {
   const [classes, setClasses] = useState([]);
@@ -13,6 +20,7 @@ const ClassScheduleScreen = ({ route, navigation }) => {
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [branchInUse, setBranchInUse] = useState({})
   const [groupedBranches, setGroupedBranches] = useState([])
+  const [selectedTime, setSelectedTime] = useState(null); // Default to the first time in the array
   // const [userId,setUserId] = useState('') 
   const { branch } = route.params;
   console.log('ClassScheduleScreen');
@@ -23,7 +31,7 @@ const ClassScheduleScreen = ({ route, navigation }) => {
     const fetchClasses = async () => {
       try {
         // tested
-        fetch(`http://146.190.32.150:5000/BranchSpecficScreen?id=${branch}`)
+        fetch(`${IP_ADDRESS}/BranchSpecficScreen?id=${branch}`)
           .then(res => {
             if (res.status == 200) {
               return res.json()
@@ -40,7 +48,7 @@ const ClassScheduleScreen = ({ route, navigation }) => {
             setBranchInUse(res)
           })
         // tested
-        const response = await fetch(`http://146.190.32.150:5000/get_classes_for_branch?id=${branch}`);
+        const response = await fetch(`${IP_ADDRESS}/get_classes_for_branch?id=${branch}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch data');
@@ -59,10 +67,12 @@ const ClassScheduleScreen = ({ route, navigation }) => {
     fetchClasses();
   }, [branch, needsRefresh]);
 
+
+
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await fetch(`http://146.190.32.150:5000/fetchAllBranchesGroupedClasses`)
+        const response = await fetch(`${IP_ADDRESS}/fetchAllBranchesGroupedClasses`)
         if (!response.ok) {
           throw new Error('Failed to fetch data for Branches and Classes');
         }
@@ -77,25 +87,34 @@ const ClassScheduleScreen = ({ route, navigation }) => {
     fetchClasses();
   }, [branch, needsRefresh]);
 
+  useEffect(() => {
+    console.log("selectedTime updated to:", selectedTime);
+  }, [selectedTime]);
 
-  const handleBooking = async (cls, fullName, email) => {
-    if (cls.participants >= 25) {
-      setBookingMessage('Cannot book class, it is full');
+
+  const handleBooking = async (cls, fullName, email, selectedTime) => {
+    if (cls.participants >= cls.capacity) {
+      // setBookingMessage('Cannot book class, it is full');
+      Alert.alert('Cannot book class, it is full.');
       setIsModalVisible(true);
       return;
     }
+
+    console.log("Selected time before saving:", selectedTime);
     console.error(`The CLass Holds ${cls}`)
     console.error(cls)
     setSelectedClass(cls);
     setIsModalVisible(true);
     setNeedsRefresh(false);
 
+
     try {
       const fullName = await AsyncStorage.getItem("fullName");
       const email = await AsyncStorage.getItem("email");
       const userId = await AsyncStorage.getItem("userId");
-      console.error(`In Booking Class UserName:${fullName}  Email: ${email}  UserId: ${userId}`);
-      const response = await fetch('http://146.190.32.150:5000/ClassBooking', {
+      console.log(`In Booking Class UserName:${fullName}  Email: ${email}  UserId: ${userId}`);
+      console.log("Selected time before saving:", selectedTime);
+      const response = await fetch(`${IP_ADDRESS}/ClassBooking`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +123,7 @@ const ClassScheduleScreen = ({ route, navigation }) => {
           username: fullName,
           email: email,
           className: cls.name,
-          time: cls.time,
+          time: selectedTime,
           userid: userId,
           clsId: cls._id,
           branch: branch,
@@ -132,7 +151,7 @@ const ClassScheduleScreen = ({ route, navigation }) => {
         setIsModalVisible(false);
         setIsSuccessModalVisible(true);  // Show success modal
       } else {
-        Alert.alert('Already Booked', ' Thank you for your trust in E8 GYM');
+        Alert.alert('Already Booked', ' Thank you for your trust in E8 GYM.');
       }
     } catch (error) {
       console.error('Error during checkout:', error);
@@ -148,7 +167,7 @@ const ClassScheduleScreen = ({ route, navigation }) => {
     }
 
     try {
-      const response = await fetch('http://146.190.32.150:5000/CancelBooking', {
+      const response = await fetch(`${IP_ADDRESS}/CancelBooking`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -179,12 +198,36 @@ const ClassScheduleScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <View style={styles.contentContainer}>
-          <View style={{ marginTop: 50, borderWidth: 2, borderColor: 'white' }}>
+          {/* <View style={{ marginTop: 50, borderWidth: 2, borderColor: 'white' }}>
             <Button
               title="My Booking"
               onPress={() => navigation.navigate('CancelBooking', { branch: branch })}
               color="black"
-            /></View>
+            />
+          </View> */}
+          <TouchableOpacity
+            style={{
+              marginTop: 50,
+              marginBottom:20,
+              borderWidth: 2,
+              borderColor: 'black',
+              borderRadius: 10,
+              paddingVertical: 12,
+              paddingHorizontal: 20,
+              backgroundColor: 'white',
+              alignItems: 'center',
+              flexDirection: 'row', // Arrange items horizontally
+              justifyContent: 'center', // Center items horizontally
+            }}
+            onPress={() => navigation.navigate('CancelBooking', { branch: branch })}
+          >
+            <FontAwesomeIcon icon={faArrowRight} color="#000000" size={24} />
+            <Text style={{ color: 'black', fontSize: 16, fontWeight: 'bold',marginLeft:10 }}>
+            View Bookings
+            </Text>
+
+          </TouchableOpacity>
+
 
           <Text style={styles.header}>Available Classes for {branchInUse && branchInUse.branch && branchInUse.branch.name ? branchInUse.branch.name : ""}:</Text>
           {classes.length == 0 && (
@@ -210,16 +253,12 @@ const ClassScheduleScreen = ({ route, navigation }) => {
               <View key={cls.id} style={styles.classContainer}>
                 <Text style={styles.className}>Class Name: {cls.name}</Text>
 
+                <Text style={styles.classDetail}>Description: {cls.description}</Text>
+                
                 {/* Display class schedule information */}
                 <Text style={styles.classDetail}>Every: {cls.days}</Text>
+                
 
-                {/* Time Details */}
-                <View style={styles.classTime}>
-                  <Text style={styles.classDetail}>Time:</Text>
-                  <Text style={styles.timeText}>
-                    {new Date(cls.the_date[0]).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                  </Text>
-                </View>
 
                 {/* Add Start and End Date */}
                 <Text style={styles.classDetail}>
@@ -229,10 +268,40 @@ const ClassScheduleScreen = ({ route, navigation }) => {
                   End Date: {new Date(cls.endDate).toLocaleDateString()}
                 </Text>
 
+                {/* Time Details */}
+                <View style={styles.classTime}>
+                  {/*<Text style={styles.classDetail}>Select Time:</Text> */}
+                  <View style={styles.pickerContainer}>
+                    <Picker
+                      selectedValue={selectedTime}
+                      onValueChange={(itemValue, idx) => {
+                        setSelectedTime(itemValue); // Update the selectedTime state with the chosen value
+                      }}
+                      style={styles.timePicker}
+                    >
+                      <Picker.Item
+                        label='Select Time'
+                        value={null}
+                        enabled={false}
+                      />
+                      {cls.the_date.map((time, index) => (
+                        <Picker.Item
+                          key={index}
+                          label={new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                          value={time}
+                          style={styles.timePickerDisplay}
+
+                        />
+                      ))}
+                    </Picker>
+                  </View>
+                </View>
+
                 {/* Display Availability */}
                 <Text style={{ color: cls.participants < cls.capacity ? 'green' : 'red', fontWeight: 'bold', textAlign: 'center' }}>
                   {cls.participants < cls.capacity ? 'Available' : 'Full'}
                 </Text>
+
 
                 <View style={{ marginTop: 20, borderWidth: 2, borderColor: 'white' }}>
                   <TouchableOpacity
@@ -242,7 +311,13 @@ const ClassScheduleScreen = ({ route, navigation }) => {
                       borderRadius: 5,
                       alignItems: 'center',
                     }}
-                    onPress={() => handleBooking(cls)}
+                    onPress={() => {
+                      if (!selectedTime) {
+                        Alert.alert("Please select a time before booking.");
+                        return;
+                      }
+                      handleBooking(cls, null, null, selectedTime);
+                    }}
                   >
                     <Text style={{ color: 'white', fontWeight: 'bold' }}>Book</Text>
                   </TouchableOpacity>
@@ -318,12 +393,37 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   classTime: {
-    flexDirection: 'row',
+    flexDirection: '',
   },
   timeText: {
     marginLeft: 7,
     color: 'white',
   },
+  timePicker: {
+    backgroundColor: '#f0f0f0', // light background color
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#ccc', // border color
+    color: 'black', // text color
+
+  },
+  timePickerDisplay: {
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  pickerContainer: {
+    marginTop: 5,
+    marginBottom:5,
+    height: 45, // Set the desired height for the Picker container
+    width: 166,
+    borderWidth: 1, // Border width
+    borderColor: 'gray', // Border color
+    borderRadius: 15, // Optional: rounded corners
+    overflow: 'hidden', // Ensures the Picker fits within the View borders
+    justifyContent: 'center',
+  },
 });
 
 export default ClassScheduleScreen;
+
+

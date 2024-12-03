@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import axios from 'axios';
+import { IP_ADDRESS } from '../../../config';
 
 const EmailVerification = ({ navigation, route }) => {
   const { _id, fullName, email, branch } = route.params;
@@ -8,7 +9,7 @@ const EmailVerification = ({ navigation, route }) => {
 
   const handleSubmit = async () => {
     try {
-      const response = await axios.post('http://146.190.32.150:5000/VerifyUser', {
+      const response = await axios.post(`${IP_ADDRESS}/VerifyUser`, {
         _id,
         verificationKey: parseInt(verificationKey) // Convert to integer as per the API format
       });

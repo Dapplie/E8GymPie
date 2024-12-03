@@ -6,6 +6,7 @@ import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { IP_ADDRESS } from '../../config';
 
 
 
@@ -150,7 +151,7 @@ const Branch1SpecificScreen = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://146.190.32.150:5000/Branch1SpecificScreen');
+      const response = await fetch(`${IP_ADDRESS}/Branch1SpecificScreen`);
       const data = await response.json();
       const filteredData = data.filter(branch => branch.branchID === '1');
       setBranchData(filteredData);
@@ -163,7 +164,7 @@ const Branch1SpecificScreen = () => {
     try {
       // Include the branch ID in the updated data
       updatedBranchData.branchID = '1'; // Update the branch ID to 1
-      const response = await fetch('http://146.190.32.150:5000/updateBranchDetails', {
+      const response = await fetch(`${IP_ADDRESS}/updateBranchDetails`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -197,7 +198,7 @@ const Branch1SpecificScreen = () => {
     try {
       // Post class details to the server
       console.error(classDetails)
-      const response = await axios.post('http://146.190.32.150:5000/createClass', classDetails);
+      const response = await axios.post(`${IP_ADDRESS}/createClass`, classDetails);
   
       if (response.status === 201) {
         // Show success message
@@ -225,7 +226,7 @@ const Branch1SpecificScreen = () => {
               setEditModalVisible(true);
             }}
           >
-            <Image source={require('../../assets/branch1.jpg')} style={styles.branchImage} />
+            <Image source={require('../../assets/branchAjalt.jpg')} style={styles.branchImage} />
             <Text style={styles.branchName}>{branch.name}</Text>
             <Text style={styles.branchLocation}>Location: {branch.location}</Text>
             <Text style={styles.branchInfo}>Users: {branch.users}</Text>

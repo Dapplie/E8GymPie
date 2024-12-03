@@ -3,6 +3,7 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { Button, ImageBackground, StyleSheet, Text, TextInput, View } from 'react-native';
+import { IP_ADDRESS } from '../../config';
 
 const AdminLoginScreen = () => {
   const navigation = useNavigation();
@@ -12,7 +13,7 @@ const AdminLoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch(`http://146.190.32.150:5000/AdminLoginScreen?email=${email}&password=${password}`);
+      const response = await fetch(`${IP_ADDRESS}/AdminLoginScreen?email=${email}&password=${password}`);
       console.log("hi ")
       
       if (response.ok) {

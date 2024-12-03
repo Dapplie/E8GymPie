@@ -1,10 +1,11 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
+import { IP_ADDRESS } from '../../config';
 const { View, Text, StyleSheet, ScrollView, TextInput,Button,  TouchableOpacity, TouchableHighlight, Alert } = require('react-native');
 
 
 const NewBranchCreationScreen = ({route,navigation}) => {
-    const [branchimages,setBranchimages]=useState([require('../../assets/branch1.jpg'),require('../../assets/branch20.jpeg'),require('../../assets/own10.jpg')])
+    const [branchimages,setBranchimages]=useState([require('../../assets/branch1.jpg'),require('../../assets/branch20.jpeg'),require('../../assets/branchAjalt.jpg')])
     const navigateBack = () =>{
         navigation.navigate('ManageBranchesScreen');
     }
@@ -16,7 +17,7 @@ const NewBranchCreationScreen = ({route,navigation}) => {
         // // here we need to submit the branch details back to the server for savings.
         // console.log(`Saving Branch of name ${branchName}`)
         // console.log(branchName)
-        fetch(`http://146.190.32.150:5000/save_new_branch_information?name=${branchName}&location=${branchLocation}&phone=${phone}`)
+        fetch(`${IP_ADDRESS}/save_new_branch_information?name=${branchName}&location=${branchLocation}&phone=${phone}`)
         .then(res =>{
             if (res.status == 200){
                return res.json()
@@ -30,6 +31,10 @@ const NewBranchCreationScreen = ({route,navigation}) => {
           }else {
             console.log("We Recieved ")
             console.log(res)
+
+            // Show success alert
+            Alert.alert('Success', 'Branch created successfully.');
+
             navigation.navigate('ManageBranchesScreen',{refresh:Math.floor(Math.random()*1000)});
           }
             

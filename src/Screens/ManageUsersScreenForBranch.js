@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import { IP_ADDRESS } from '../../config';
 
 const ManageUsersScreenForBranch = ({ route, navigation }) => {
     const branchId = route.params.branch;
@@ -12,7 +13,7 @@ const ManageUsersScreenForBranch = ({ route, navigation }) => {
 
     useEffect(() => {
         try {
-            fetch(`http://146.190.32.150:5000/AllUsersForBranch?bid=${branchId}`)
+            fetch(`${IP_ADDRESS}/AllUsersForBranch?bid=${branchId}`)
                 .then((res) => {
                     if (res.status === 200) {
                         setSError('');

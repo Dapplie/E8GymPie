@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import axios from 'axios';
+import { IP_ADDRESS } from '../../config';
 
 const PasswordResetForm = ({ onClose }) => {
   const [email, setEmail] = useState('');
@@ -31,7 +33,42 @@ const PasswordResetForm = ({ onClose }) => {
     }
   };
 
-  // Function to handle password change
+  // Function to handle password change 
+  const handleChangePassword = async () => {
+    if (!email || !verificationCode || !newPassword) {
+      Alert.alert('Error', 'Please fill all the fields.');
+      return;
+    }
+
+    // Ensure verificationCode is a number
+    const verificationCodeNumber = parseInt(verificationCode, 10);
+
+    try {
+      const response = await axios.post(`${IP_ADDRESS}/ChangePassword`, {
+        email,
+        newPassword,
+        verificationCode: verificationCodeNumber // Ensure this is sent as a number
+      });
+
+      console.log('Change Password Response:', response.data);
+      Alert.alert('Password Changed', 'Your password has been changed successfully.');
+      onClose();
+    } catch (error) {
+      console.error('Error changing password:', error.response ? error.response.data : error.message);
+      Alert.alert('Error', error.response ? error.response.data.error : 'An error occurred while changing password');
+    }
+
+  };
+
+
+
+
+
+
+
+
+
+  {/* // Function to handle password change
   const handleChangePassword = () => {
     if (!email || !verificationCode || !newPassword) {
       Alert.alert('Error', 'Please fill all the fields.');
@@ -40,6 +77,7 @@ const PasswordResetForm = ({ onClose }) => {
       onClose();
     }
   };
+  */}
 
   return (
     <View style={styles.container}>

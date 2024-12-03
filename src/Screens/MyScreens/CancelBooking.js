@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { IP_ADDRESS } from '../../../config';
 
 function CancelBooking({ route }) {
   const { branch } = route.params;
@@ -14,7 +15,7 @@ function CancelBooking({ route }) {
         const value = await AsyncStorage.getItem('userId');
         if (value !== null) {
           setUserId(value);
-          const response = await axios.post('http://146.190.32.150:5000/getBooking', {
+          const response = await axios.post(`${IP_ADDRESS}/getBooking`, {
             branch,
             userId: value,
           });
@@ -34,18 +35,21 @@ function CancelBooking({ route }) {
 
   const handleCancelBooking = async (bookingId) => {
     try {
-      await axios.post('http://146.190.32.150:5000/cancelBooking', {
+      const reqAddress=`${IP_ADDRESS}/cancelBooking`;
+      console.log(`Address Requested for Canceling \n${reqAddress}`)
+      await axios.post(`${IP_ADDRESS}/cancelBooking`, {
         _id: bookingId,
       });
       Alert.alert('Success', 'Booking cancelled successfully!');
       // Refresh booking data
-      const response = await axios.post('http://146.190.32.150:5000/getBooking', {
+      const response = await axios.post(`${IP_ADDRESS}/getBooking`, {
         branch,
         userId,
       });
       setBookingData(response.data);
     } catch (error) {
-      console.error(error);
+      console.error(JSON.stringify(error,null,2));
+      Alert.alert(JSON.stringify(error))
       Alert.alert('Error', 'Failed to cancel booking!');
     }
   };

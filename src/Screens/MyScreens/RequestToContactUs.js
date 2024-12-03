@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { IP_ADDRESS } from '../../../config';
 import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const RequestToContactUs = () => {
@@ -7,7 +8,7 @@ const RequestToContactUs = () => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    axios.get('http://146.190.32.150:5000/ContactUs')
+    axios.get(`${IP_ADDRESS}/ContactUs`)
       .then(response => {
         setMessage(response.data.message);
         setContacts(response.data.contacts);

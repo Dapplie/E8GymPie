@@ -51,7 +51,7 @@ const SuperAdminDashboardScreen = ({ navigation }) => {
               <Text style={styles.optionText}>View Bookings</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.option} onPress={gototrytocontactus}>
-              <Text style={styles.optionText}>Request To Contact Us</Text>
+              <Text style={styles.optionText}>Contact Us Request</Text>
             </TouchableOpacity>
 
           </View>

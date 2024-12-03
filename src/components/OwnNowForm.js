@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import CountryPicker from 'react-native-country-picker-modal';
+import { IP_ADDRESS } from '../../config';
 
 const OwnNowForm = ({ onClose }) => {
   const [fullName, setFullName] = useState('');
@@ -18,12 +19,12 @@ const OwnNowForm = ({ onClose }) => {
         Alert.alert('Error', 'All fields are required');
         return;
       }
-  
+
       if (!countryCode) {
         Alert.alert('Error', 'Please select a country code');
         return;
       }
-  
+
       const formData = {
         fullName,
         mobile: `+${countryCode}${mobile}`,
@@ -32,9 +33,9 @@ const OwnNowForm = ({ onClose }) => {
         spaceAvailable,
         areaSize: spaceAvailable === 'yes' ? areaSize : undefined,
       };
-  
-      const response = await axios.post('http://146.190.32.150:5000/OwnNow', formData);
-  
+
+      const response = await axios.post(`${IP_ADDRESS}/OwnNow`, formData);
+
       if (response.status === 201) {
         Alert.alert('Success', 'Your form has been submitted successfully.');
         onClose();
@@ -46,12 +47,12 @@ const OwnNowForm = ({ onClose }) => {
       Alert.alert('Error', 'Failed to submit form. Please try again later.');
     }
   };
-    
+
   return (
     <ScrollView contentContainerStyle={styles.scrollViewContent}>
       <View style={styles.container}>
         <Text style={styles.title}>Order a Franchise</Text>
-  
+
         {/* Form fields */}
         <Text style={styles.label}>Full Name</Text>
         <TextInput
@@ -68,8 +69,15 @@ const OwnNowForm = ({ onClose }) => {
             withFlagButton={false}
             withCallingCodeButton
             withCallingCode
+            withFilter
             onSelect={(country) => setCountryCode(country.cca2)}
             containerButtonStyle={styles.countryPickerButton}
+            theme={{
+              
+              backgroundColor: "black",
+              onBackgroundTextColor: "#fff", // Ensure text (codes) appear white
+              
+            }}
           />
           <TextInput
             style={styles.mobileInput}
@@ -105,7 +113,7 @@ const OwnNowForm = ({ onClose }) => {
           value={spaceAvailable}
           onChangeText={(value) => setSpaceAvailable(value.toLowerCase())}
         />
-  
+
         {spaceAvailable.toLowerCase() === 'yes' && (
           <>
             <Text style={styles.label}>Area Size</Text>
@@ -118,7 +126,7 @@ const OwnNowForm = ({ onClose }) => {
             />
           </>
         )}
-  
+
         {/* Submit button */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>

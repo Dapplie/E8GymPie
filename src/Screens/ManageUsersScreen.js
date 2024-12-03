@@ -7,6 +7,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import * as Print from 'expo-print';
 import * as FileSystem from 'expo-file-system';
 import * as IntentLauncher from 'expo-intent-launcher';
+import { IP_ADDRESS } from "../../config";
 
 
 const ManageUsersScreen = ({ route, navigation }) => {
@@ -14,7 +15,7 @@ const ManageUsersScreen = ({ route, navigation }) => {
     const [sError, setSError] = useState("")
     const colors = ['#000', '#111']; // Darker background for better readability
     useEffect(() => {
-        fetch("http://146.190.32.150:5000/AllUsers")
+        fetch(`${IP_ADDRESS}/AllUsers`)
             .then(res => res.json())
             .then(res => {
                 console.log(res)
@@ -125,11 +126,16 @@ const ManageUsersScreen = ({ route, navigation }) => {
                                         <Text style={{ fontSize: 16, color: '#fff' }}>- {val['className']}</Text>
                                         {val['Class'].length > 0 && (
                                             <Text style={{ fontSize: 16, color: '#fff' }}>
-                                                Every ({val['Class'][0]['days']}) @ {new Date(val['Class'][0]['time']).getHours()}:{new Date(val['Class'][0]['time']).getMinutes()}
+                                                Every {val['Class'][0]['days']} @ {new Date(val['classTime']).toLocaleTimeString('en-US', {
+                                                    hour: 'numeric',
+                                                    minute: 'numeric',
+                                                    hour12: true
+                                                })}
                                             </Text>
                                         )}
                                     </View>
                                 ))}
+
                             </View>
                         )}
                     </View>

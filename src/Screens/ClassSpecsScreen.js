@@ -5,6 +5,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import { IP_ADDRESS } from '../../config';
+import moment from 'moment-timezone';
 
 const ClassSpecsScreen = ({ route, navigation }) => {
     const { theClass, from, branch } = route.params;
@@ -29,16 +31,25 @@ const ClassSpecsScreen = ({ route, navigation }) => {
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     const [newTime, setNewTime] = useState(new Date());
     const [showNewTimePicker, setShowNewTimePicker] = useState(false);
-    const addTime = () => {
-        if (Array.isArray(the_date) && the_date.length > 0) {
-            setTheDate([newTime]);
-            // setTheDate([...the_date, newTime]);
-        } else {
-            setTheDate([newTime]);
-        }
+    // const addTime = () => {
+    //     if (Array.isArray(the_date) && the_date.length > 0) {
+    //         setTheDate([newTime]);
+    //         // setTheDate([...the_date, newTime]);
+    //     } else {
+    //         setTheDate([newTime]);
+    //     }
 
+    //     setNewTime(new Date());
+    // }
+    const addTime = () => {
+        // Append new time to the existing `the_date` array
+        setTheDate([...the_date, newTime]);
+
+        // Reset the new time state for the next selection
         setNewTime(new Date());
     }
+
+
     const removeTime = (index) => {
         const updatedTimes = the_date.filter((_, i) => i !== index);
         setTheDate(updatedTimes);
@@ -67,52 +78,118 @@ const ClassSpecsScreen = ({ route, navigation }) => {
     console.log("Branch => ")
     console.log(branch)
     console.log("===========================================")
-    const handleSubmit = () => {
-        the_startdate = new Date(Date.UTC(schedule.getUTCFullYear(), schedule.getUTCMonth(), schedule.getUTCDate(), 10, 10));
-        // console.log(`The Date Before Send = ${the_date}`)
-        the_startdate = the_startdate.toISOString()
+    // const handleSubmit = () => {
+    //     the_startdate = new Date(Date.UTC(schedule.getUTCFullYear(), schedule.getUTCMonth(), schedule.getUTCDate(), 10, 10));
+    //     // console.log(`The Date Before Send = ${the_date}`)
+    //     the_startdate = the_startdate.toISOString()
 
-        the_timeEnd = new Date(Date.UTC(scheduleEnd.getUTCFullYear(), scheduleEnd.getUTCMonth(), scheduleEnd.getUTCDate(), 10, 10));
-        the_timeEnd = the_timeEnd.toISOString()
-        // console.log(`Sending The Date As  = ${the_date}`)
-        //&schedule=${the_date}
-        fetch(`http://146.190.32.150:5000/update_class`, {
+    //     the_timeEnd = new Date(Date.UTC(scheduleEnd.getUTCFullYear(), scheduleEnd.getUTCMonth(), scheduleEnd.getUTCDate(), 10, 10));
+    //     the_timeEnd = the_timeEnd.toISOString()
+    //     // console.log(`Sending The Date As  = ${the_date}`)
+    //     //&schedule=${the_date}
+    //     fetch(`${IP_ADDRESS}/update_classNew`, {
+    //         method: "PUT",
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //             // 'Content-Type': 'application/x-www-form-urlencoded',
+    //         },
+    //         body: JSON.stringify({
+    //             'className': className,
+    //             'instructor': instructor,
+    //             'id': theClass.id,
+    //             'availability': availability,
+    //             'startDate': the_startdate,
+    //             'endDate': the_timeEnd,
+    //             'description': description,
+    //             'capacity': capacity,
+    //             'days': days,
+    //             'branch': branch,
+    //             'the_date': the_date
+    //         }),
+    //         /* className=${className}
+    //           instructor=${instructor}
+    //           id=${theClass.id}
+    //           availability=${availability}
+    //           description=${description}
+    //           capacity=${capacity}
+    //           schedule=${the_date}`
+    //         */
+
+    //     })
+    //         .then(res => {
+    //             if (res.status == 200) {
+    //                 navigation.navigate(from, { branch, refresh: Math.random() });
+    //             }
+    //         }).catch(err => {
+    //             console.log(err)
+    //         })
+    // }
+    
+    const handleSubmit = () => {
+        // Detect user's timezone
+        const userTimeZone = moment.tz.guess();
+        console.log("User's Time Zone:", userTimeZone);
+
+        // Convert startDate to the user's timezone
+        const the_startdate = moment
+            .utc(schedule) // Parse as UTC
+            .tz(userTimeZone) // Convert to user's timezone
+            .format();
+
+        console.log("Converted Start Date (the_startdate):", the_startdate);
+
+        // Convert endDate to the user's timezone
+        const the_timeEnd = moment
+            .utc(scheduleEnd) // Parse as UTC
+            .tz(userTimeZone) // Convert to user's timezone
+            .format();
+
+        console.log("Converted End Date (the_timeEnd):", the_timeEnd);
+
+        // Convert 'the_date' array to ISO strings in user's timezone
+        const theDateInUserTimezone = Array.isArray(the_date)
+            ? the_date.map(date =>
+                moment.utc(date).tz(userTimeZone).format() // Convert each date to ISO string in user's timezone
+            )
+            : moment.utc(the_date).tz(userTimeZone).format(); // If the_date is a single date
+
+        console.log("Converted Dates Array (the_date):", theDateInUserTimezone);
+
+        // Prepare the payload
+        const payload = {
+            className: className,
+            instructor: instructor,
+            id: theClass.id,
+            availability: availability,
+            startDate: the_startdate,
+            endDate: the_timeEnd,
+            description: description,
+            capacity: capacity,
+            days: days,
+            branch: branch,
+            the_date: theDateInUserTimezone, // Sending as UNIX timestamps
+        };
+
+        console.log("Updating Class with Payload:", JSON.stringify(payload));
+
+        // Make the API request
+        fetch(`${IP_ADDRESS}/update_classNew`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                // 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: JSON.stringify({
-                'className': className,
-                'instructor': instructor,
-                'id': theClass.id,
-                'availability': availability,
-                'startDate': the_startdate,
-                'endDate': the_timeEnd,
-                'description': description,
-                'capacity': capacity,
-                'days': days,
-                'branch': branch,
-                'the_date': the_date
-            }),
-            /* className=${className}
-              instructor=${instructor}
-              id=${theClass.id}
-              availability=${availability}
-              description=${description}
-              capacity=${capacity}
-              schedule=${the_date}`
-            */
-
+            body: JSON.stringify(payload),
         })
             .then(res => {
-                if (res.status == 200) {
+                if (res.status === 200) {
                     navigation.navigate(from, { branch, refresh: Math.random() });
                 }
-            }).catch(err => {
-                console.log(err)
             })
-    }
+            .catch(err => {
+                console.error("Error updating class:", err);
+            });
+    };
+
 
     return (
         <LinearGradient colors={["#666", "#000"]} style={{ flex: 1 }}>
@@ -204,7 +281,7 @@ const ClassSpecsScreen = ({ route, navigation }) => {
 
                 <View style={{ marginBottom: 25 }}>
                     <Text style={{ color: '#E0E0E0', fontWeight: 'bold', marginBottom: 10, fontSize: 16 }}>Times:</Text>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
+                    {/* <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
                         {Array.isArray(the_date) && the_date.length > 0 ? (
                             <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, marginBottom: 10, backgroundColor: '#1E1E1E', borderRadius: 5, padding: 5 }}>
                                 <Text style={{ color: '#E0E0E0', marginRight: 5 }}>
@@ -222,6 +299,35 @@ const ClassSpecsScreen = ({ route, navigation }) => {
                             : (
                                 <Text style={{ fontSize: 14, color: '#E0E0E0' }}>No times available</Text>
                             )}
+                    </View> */}
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
+                        {Array.isArray(the_date) && the_date.length > 0 ? (
+                            the_date.map((date, index) => {
+                                const time = new Date(date);
+                                // Check if time is valid
+                                if (isNaN(time.getTime())) {
+                                    return null; // If the date is invalid, skip rendering
+                                }
+                                const hours = time.getHours();
+                                const minutes = time.getMinutes();
+                                const formattedHours = String(hours % 12 || 12).padStart(2, '0');
+                                const formattedMinutes = String(minutes).padStart(2, '0');
+                                const period = hours >= 12 ? 'PM' : 'AM';
+
+                                return (
+                                    <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, marginBottom: 10, backgroundColor: '#1E1E1E', borderRadius: 5, padding: 5 }}>
+                                        <Text style={{ color: '#E0E0E0', marginRight: 5 }}>
+                                            {`${formattedHours}:${formattedMinutes} ${period}`}
+                                        </Text>
+                                        <TouchableOpacity onPress={() => removeTime(index)}>
+                                            <FontAwesome name="trash" size={16} color="red" />
+                                        </TouchableOpacity>
+                                    </View>
+                                );
+                            })
+                        ) : (
+                            <Text style={{ fontSize: 14, color: '#E0E0E0' }}>No times available</Text>
+                        )}
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, marginBottom: 10, backgroundColor: '#1E1E1E', borderRadius: 5, padding: 5 }}>
                         <TouchableOpacity
@@ -239,9 +345,14 @@ const ClassSpecsScreen = ({ route, navigation }) => {
                                 marginRight: 10,
                             }}
                         ><FontAwesome name="hourglass" size={20} color="white" />
-                            <Text style={{ color: '#E0E0E0', textAlign: 'center', fontSize: 16 }}>
+                            {/* <Text style={{ color: '#E0E0E0', textAlign: 'center', fontSize: 16 }}>
                                 {`${String(newTime.getHours()).padStart(2, '0')}:${String(newTime.getMinutes()).padStart(2, '0')}`}
+                            </Text> */}
+
+                            <Text style={{ color: '#E0E0E0', textAlign: 'center', fontSize: 16 }}>
+                                {`${String(newTime.getHours() % 12 || 12).padStart(2, '0')}:${String(newTime.getMinutes()).padStart(2, '0')} ${newTime.getHours() >= 12 ? 'PM' : 'AM'}`}
                             </Text>
+
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={addTime}
@@ -319,7 +430,7 @@ const ClassSpecsScreen = ({ route, navigation }) => {
                         testID="timePicker"
                         value={schedule ? schedule : new Date()}
                         mode="time"
-                        is24Hour={true}
+                        is24Hour={false}
                         display="default"
                         onChange={(event, selectedDate) => {
                             setShowTimePicker(false);
@@ -333,7 +444,7 @@ const ClassSpecsScreen = ({ route, navigation }) => {
                         testID="newTimePicker"
                         value={newTime}
                         mode="time"
-                        is24Hour={true}
+                        is24Hour={false}
                         display="default"
                         onChange={(event, selectedDate) => {
                             setShowNewTimePicker(false);
@@ -377,15 +488,13 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
     const [theDates, setTheDates] = useState([])
     const [newTime, setNewTime] = useState(new Date());
     const addTime = () => {
-        if (Array.isArray(the_date) && the_date.length > 0) {
-            setTheDate([newTime]);
-            // setTheDate([...the_date, newTime]);
-        } else {
-            setTheDate([newTime]);
-        }
+        // Append new time to the existing `the_date` array
+        setTheDate([...the_date, newTime]);
 
+        // Reset the new time state for the next selection
         setNewTime(new Date());
     }
+
     const removeTime = (index) => {
         const updatedTimes = the_date.filter((_, i) => i !== index);
         setTheDate(updatedTimes);
@@ -423,66 +532,129 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
     console.log(theClass)
     console.log(from)
     console.log(branch)
-    const handleSubmit = () => {
-        the_dates = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate(), 10, 10));
-        // console.log(`The Date Before Send = ${the_date}`)
-        the_dates = the_dates.toISOString()
+    // const handleSubmit = () => {
+    //     the_dates = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate(), 10, 10));
+    //     // console.log(`The Date Before Send = ${the_date}`)
+    //     the_dates = the_dates.toISOString()
 
-        the_timeEnd = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate(), 10, 10));
-        the_timeEnd = the_timeEnd.toISOString()
-        // console.log(`Sending The Date As  = ${the_date}`)
-        //&schedule=${the_date}
-        console.log('Updating Class ')
-        console.log(JSON.stringify({
-            'className': className,
-            'instructor': instructor,
-            'id': theClass.id,
-            'availability': availability,
-            'startDate': the_dates,
-            'endDate': the_timeEnd,
-            'description': description,
-            'capacity': capacity,
-            'days': days,
-            'branch': branch.branchID,
-            'the_date': the_date
-        }))
-        fetch(`http://146.190.32.150:5000/update_classNew`, {
+    //     the_timeEnd = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate(), 10, 10));
+    //     the_timeEnd = the_timeEnd.toISOString()
+    //     // console.log(`Sending The Date As  = ${the_date}`)
+    //     //&schedule=${the_date}
+    //     console.log('Updating Class ')
+    //     console.log(JSON.stringify({
+    //         'className': className,
+    //         'instructor': instructor,
+    //         'id': theClass.id,
+    //         'availability': availability,
+    //         'startDate': the_dates,
+    //         'endDate': the_timeEnd,
+    //         'description': description,
+    //         'capacity': capacity,
+    //         'days': days,
+    //         'branch': branch.branchID,
+    //         'the_date': the_date
+    //     }))
+    //     fetch(`${IP_ADDRESS}/update_classNew`, {
+    //         method: "PUT",
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //             // 'Content-Type': 'application/x-www-form-urlencoded',
+    //         },
+    //         body: JSON.stringify({
+    //             'className': className,
+    //             'instructor': instructor,
+    //             'id': theClass.id,
+    //             'availability': availability,
+    //             'startDate': the_dates,
+    //             'endDate': the_timeEnd,
+    //             'description': description,
+    //             'capacity': capacity,
+    //             'days': days,
+    //             'branch': branch.branchID,
+    //             'the_date': the_date
+    //         }),
+    //         /* className=${className}
+    //           instructor=${instructor}
+    //           id=${theClass.id}
+    //           availability=${availability}
+    //           description=${description}
+    //           capacity=${capacity}
+    //           schedule=${the_date}`
+    //         */
+
+    //     })
+    //         .then(res => {
+    //             if (res.status == 200) {
+    //                 navigation.navigate(from, { branch, refresh: Math.random() });
+    //             }
+    //         }).catch(err => {
+    //             console.log(err)
+    //         })
+    // }
+
+    const handleSubmit = () => {
+        // Detect user's current timezone
+        const userTimeZone = moment.tz.guess();
+        console.log("User's Time Zone:", userTimeZone);
+
+        // Convert startDate to user's timezone
+        const the_dates = moment
+            .utc(startDate) // Parse as UTC
+            .tz(userTimeZone) // Convert to user's timezone
+            .format();
+
+        console.log("Converted Start Date (the_dates):", the_dates);
+
+        // Convert endDate to user's timezone
+        const the_timeEnd = moment
+            .utc(endDate) // Parse as UTC
+            .tz(userTimeZone) // Convert to user's timezone
+            .format();
+
+        console.log("Converted End Date (the_timeEnd):", the_timeEnd);
+
+        // Convert the_date array to user's timezone
+        const convertedDates = the_date.map(date =>
+            moment.utc(date).tz(userTimeZone).format()
+        );
+
+        console.log("Converted Dates Array (the_date):", convertedDates);
+
+        // Prepare the payload
+        const payload = {
+            className: className,
+            instructor: instructor,
+            id: theClass.id,
+            availability: availability,
+            startDate: the_dates,
+            endDate: the_timeEnd,
+            description: description,
+            capacity: capacity,
+            days: days,
+            branch: branch.branchID,
+            the_date: convertedDates,
+        };
+
+        console.log("Updating Class with Payload:", JSON.stringify(payload));
+
+        // Send the updated data
+        fetch(`${IP_ADDRESS}/update_classNew`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
-                // 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: JSON.stringify({
-                'className': className,
-                'instructor': instructor,
-                'id': theClass.id,
-                'availability': availability,
-                'startDate': the_dates,
-                'endDate': the_timeEnd,
-                'description': description,
-                'capacity': capacity,
-                'days': days,
-                'branch': branch.branchID,
-                'the_date': the_date
-            }),
-            /* className=${className}
-              instructor=${instructor}
-              id=${theClass.id}
-              availability=${availability}
-              description=${description}
-              capacity=${capacity}
-              schedule=${the_date}`
-            */
-
+            body: JSON.stringify(payload),
         })
             .then(res => {
-                if (res.status == 200) {
+                if (res.status === 200) {
                     navigation.navigate(from, { branch, refresh: Math.random() });
                 }
-            }).catch(err => {
-                console.log(err)
             })
-    }
+            .catch(err => {
+                console.error("Error updating class:", err);
+            });
+    };
 
     return (
         <LinearGradient colors={["#000", "#333"]} style={{ flex: 1 }}>
@@ -499,14 +671,14 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
                     onChangeText={(text) => setClassName(text)}
                 /> */}
 
-                <Text style={styles.label}>Instructor:</Text>
+                {/* <Text style={styles.label}>Instructor:</Text>
                 <TextInput
                     style={styles.input}
                     placeholder="Instructor"
                     placeholderTextColor="#777"
                     value={instructor}
                     onChangeText={(text) => setInstructor(text)}
-                />
+                /> */}
 
                 <Text style={styles.label}>Description:</Text>
                 <TextInput
@@ -519,7 +691,17 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
                 />
 
                 <Text style={styles.label}>Capacity:</Text>
+
                 <TextInput
+                    style={styles.input}
+                    placeholder="Capacity"
+                    placeholderTextColor="#777"
+                    value={String(capacity)}
+                    inputMode='numeric'
+                    onChangeText={(text) => setCapacity(parseInt(text) || '')}
+                    keyboardType='numeric'
+                />
+                {/* <TextInput
                     style={styles.input}
                     placeholder="Capacity"
                     placeholderTextColor="#777"
@@ -527,7 +709,7 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
                     inputMode='numeric'
                     onChangeText={(text) => setCapacity(parseInt(text) || 10)}
                     keyboardType='numeric'
-                />
+                /> */}
 
                 {/* <Text style={styles.label}>Registered:</Text>
                 <TextInput
@@ -576,27 +758,37 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
                     <Text style={{ color: '#E0E0E0', fontWeight: 'bold', marginBottom: 10, fontSize: 16 }}>Times:</Text>
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
                         {Array.isArray(the_date) && the_date.length > 0 ? (
+                            the_date.map((date, index) => {
+                                const time = new Date(date);
+                                // Check if time is valid
+                                if (isNaN(time.getTime())) {
+                                    return null; // If the date is invalid, skip rendering
+                                }
+                                const hours = time.getHours();
+                                const minutes = time.getMinutes();
+                                const formattedHours = String(hours % 12 || 12).padStart(2, '0');
+                                const formattedMinutes = String(minutes).padStart(2, '0');
+                                const period = hours >= 12 ? 'PM' : 'AM';
 
-                            <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, marginBottom: 10, backgroundColor: '#1E1E1E', borderRadius: 5, padding: 5 }}>
-                                <Text style={{ color: '#E0E0E0', marginRight: 5 }}>
-                                    {(() => {
-
-                                        const time = new Date(the_date[0])
-                                        return (`${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`);
-                                    })()}
-                                </Text>
-                                <TouchableOpacity onPress={() => removeTime(0)}>
-                                    <FontAwesome name="trash" size={16} color="red" />
-                                </TouchableOpacity>
-                            </View>
-                        )
-                            : (
-                                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>No times available</Text>
-                            )}
+                                return (
+                                    <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, marginBottom: 10, backgroundColor: '#1E1E1E', borderRadius: 5, padding: 5 }}>
+                                        <Text style={{ color: '#E0E0E0', marginRight: 5 }}>
+                                            {`${formattedHours}:${formattedMinutes} ${period}`}
+                                        </Text>
+                                        <TouchableOpacity onPress={() => removeTime(index)}>
+                                            <FontAwesome name="trash" size={16} color="red" />
+                                        </TouchableOpacity>
+                                    </View>
+                                );
+                            })
+                        ) : (
+                            <Text style={{ fontSize: 14, color: '#E0E0E0' }}>No times available</Text>
+                        )}
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, marginBottom: 10, backgroundColor: '#1E1E1E', borderRadius: 5, padding: 5 }}>
+                        {/* Button to select and add new time */}
                         <TouchableOpacity
-                            onPress={() => setShowNewTimePicker(true)}
+                            onPress={setShowNewTimePicker.bind(this, true)}
                             style={{
                                 flex: 1,
                                 borderColor: '#303030',
@@ -609,9 +801,10 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
                                 alignItems: 'center',
                                 marginRight: 10,
                             }}
-                        ><FontAwesome name="hourglass" size={20} color="white" />
+                        >
+                            <FontAwesome name="hourglass" size={20} color="white" />
                             <Text style={{ color: '#E0E0E0', textAlign: 'center', fontSize: 16 }}>
-                                {`${String(newTime.getHours()).padStart(2, '0')}:${String(newTime.getMinutes()).padStart(2, '0')}`}
+                                {`${String(newTime.getHours() % 12 || 12).padStart(2, '0')}:${String(newTime.getMinutes()).padStart(2, '0')} ${newTime.getHours() >= 12 ? 'PM' : 'AM'}`}
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -631,6 +824,7 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
                         </TouchableOpacity>
                     </View>
                 </View>
+
 
                 <Text style={styles.label}>Every:</Text>
                 <Picker
@@ -690,7 +884,7 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
                         testID="timePicker"
                         value={startDate ? startDate : new Date()}
                         mode="time"
-                        is24Hour={true}
+                        is24Hour={false}
                         display="default"
                         onChange={(event, selectedDate) => {
                             setShowTimePicker(false);
@@ -704,7 +898,7 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
                         testID="newTimePicker"
                         value={newTime}
                         mode="time"
-                        is24Hour={true}
+                        is24Hour={false}
                         display="default"
                         onChange={(event, selectedDate) => {
                             setShowNewTimePicker(false);

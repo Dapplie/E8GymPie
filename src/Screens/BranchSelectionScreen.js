@@ -7,9 +7,9 @@ import { useNavigation } from '@react-navigation/native';
 
 const BranchSelectionScreen = ({ navigation }) => {
   const branches = [
-    { id: 1, name: 'Qlayaa', image: require('../../assets/branch1.jpg') },
-    { id: 2, name: 'Ajaltoun', image: require('../../assets/branch20.jpeg') },
-    { id: 3, name: 'Hazmieh', image: require('../../assets/own10.jpg') }
+    { id: 1, name: 'Qlayaa', image: require('../../assets/branchAjalt.jpg') },
+    { id: 2, name: 'Ajaltoun', image: require('../../assets/branchAjalt.jpg') },
+    { id: 3, name: 'Hazmieh', image: require('../../assets/branchAjalt.jpg') }
   ];
 
   const handleBranchSelect = (branch) => {

@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
+import { IP_ADDRESS } from '../../config';
 import { Button, ImageBackground, StyleSheet, Text, TextInput, View, TouchableOpacity } from 'react-native';
 
 const SuperAdminLoginScreen = () => {
@@ -11,7 +12,7 @@ const SuperAdminLoginScreen = () => {
   const handleLogin = async () => {
     try {
       // Make a GET request to the server to fetch Super Admin credentials
-      const response = await fetch(`http://146.190.32.150:5000/SuperAdminLoginScreen?email=${email}&securityCode=${securityCode}`);
+      const response = await fetch(`${IP_ADDRESS}/SuperAdminLoginScreen?email=${email}&securityCode=${securityCode}`);
 
       // Check if authentication is successful based on the response
       if (response.ok) {
@@ -26,7 +27,7 @@ const SuperAdminLoginScreen = () => {
   };
   const handleAdminLogin = async () => {
     try {
-      const response = await fetch(`http://146.190.32.150:5000/AdminLoginScreen?email=${email}&password=${securityCode}`);
+      const response = await fetch(`${IP_ADDRESS}/AdminLoginScreen?email=${email}&password=${securityCode}`);
 
       if (response.ok) {
         returned = JSON.parse(await response.text())
@@ -43,7 +44,7 @@ const SuperAdminLoginScreen = () => {
   };
 
   return (
-    <ImageBackground source={require('../../assets/adminpic1.jpg')} style={styles.backgroundImage}>
+    <ImageBackground source={require('../../assets/superadmin22.png')} style={styles.backgroundImage}>
       <View style={styles.overlay} />
       <View style={styles.container}>
         <Text style={styles.title}>Super Admin Login</Text>

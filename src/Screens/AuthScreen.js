@@ -8,6 +8,11 @@ import { Video } from 'expo-av';
 import React, { useEffect, useState } from 'react';
 import { Alert, Button, Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import CountryPicker from 'react-native-country-picker-modal';
+import { IP_ADDRESS } from '../../config';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+
+
 
 const AuthScreen = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -21,23 +26,35 @@ const AuthScreen = () => {
   const [country, setCountry] = useState(null);
   const [phoneNumberInput, setPhoneNumberInput] = useState('');
   const [selectedBranch, setSelectedBranch] = useState(null);
-  const [branches, setBranches] = useState(['Qlayaa', 'Hazmieh', 'Ajaltoun']); // Add branches here
+  const [branches, setBranches] = useState([]);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  useEffect(() => {
-    fetch("http://146.190.32.150:5000/branches_for_super_admin")
-      .then(res => {
-        if (res.status == 200) {
-          return res.json()
-        } else {
-          return []
+  useFocusEffect(
+    useCallback(() => {
+      const fetchBranches = async () => {
+        try {
+          const response = await fetch(`${IP_ADDRESS}/branches_for_super_admin`);
+          if (response.status === 200) {
+            const data = await response.json();
+            console.log("We Have Branches");
+            console.log(data);
+            setBranches(data);
+          } else {
+            setBranches([]);
+          }
+        } catch (error) {
+          console.error("Error fetching branches:", error);
         }
-      }).then(res => {
-        console.log("We Have Branchess ")
-        console.log(res)
-        setBranches(res)
-      })
-  }, [])
+      };
+
+      fetchBranches();
+
+      // Optionally, you can return a cleanup function if needed
+      return () => {
+        setBranches([]); // Clear branches if you want to reset on unmount
+      };
+    }, [])
+  );
 
   const handleSubmitSignUp = async () => {
     try {
@@ -47,7 +64,7 @@ const AuthScreen = () => {
         return;
       }
 
-      const response = await axios.post('http://146.190.32.150:5000/SignUpScreen', {
+      const response = await axios.post(`${IP_ADDRESS}/SignUpScreen`, {
         fullName: fullName,
         email: email,
         password: password,
@@ -67,6 +84,16 @@ const AuthScreen = () => {
         await AsyncStorage.setItem('email', email); // Store email in AsyncStorage
         console.error('User ID stored in AsyncStorage:', userId);
 
+        // Reset form fields
+        setFullName('');
+        setEmail('');
+        setPassword('');
+        setPhoneNumber('');
+        setDob('');
+        setSelectedBranch(null);
+        setCountry(null);
+        setPhoneNumberInput('');
+
         navigation.navigate('EmailVerification', { fullName: fullName, email: email, branch: selectedBranch, _id: response.data.user.insertedId });
         // open DashBoard 
       }
@@ -79,7 +106,7 @@ const AuthScreen = () => {
   const handleSubmit = async () => {
     if (isSignIn) {
       try {
-        const response = await axios.post('http://146.190.32.150:5000/SignInScreen', {
+        const response = await axios.post(`${IP_ADDRESS}/SignInScreen`, {
           email: email,
           password: password,
         });
@@ -142,7 +169,7 @@ const AuthScreen = () => {
         <FontAwesome name="user" size={30} color="white" />
       </TouchableOpacity>
       <Video
-        source={require('../../assets/E8Gymvideo.mp4')}
+        source={require('../../assets/E8Gymvideo2.mp4')}
         rate={1.0}
         volume={1.0}
         isMuted={true}
@@ -163,7 +190,7 @@ const AuthScreen = () => {
           <Text style={styles.brandText}>
             Explore our: {"\n"}
             E8 Gym - "Place For Athletes"{"\n"}
-            E8 Online - "Made For Athletes"
+            E8 Products and services - "Made For Athletes"
           </Text>
           <Text style={styles.brandDescription}>
             Endurance Eight is a sports brand, dedicated to elevating the
@@ -499,10 +526,8 @@ const styles = StyleSheet.create({
   countryCode: {
     fontSize: 16,
     marginRight: 20,
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: -1, height: 1 },
-    textShadowRadius: 10,
+    color: 'black',
+
   },
   phoneInput: {
     flex: 1,

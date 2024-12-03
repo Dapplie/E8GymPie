@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import CountryPicker from 'react-native-country-picker-modal';
+import { IP_ADDRESS } from '../../config';
 
 import Header from './Header';
 
@@ -101,7 +102,7 @@ const CheckoutScreen = ({ route }) => {
     }
     
     try {
-      const response = await fetch('http://146.190.32.150:5000/checkout', {
+      const response = await fetch(`${IP_ADDRESS}/checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { Alert, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { IP_ADDRESS } from '../../config';
 
 
 
@@ -141,7 +142,7 @@ const Branch3SpecificScreen = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://146.190.32.150:5000/Branch3SpecificScreen');
+      const response = await fetch(`${IP_ADDRESS}/Branch3SpecificScreen`);
       const data = await response.json();
       const filteredData = data.filter(branch => branch.branchID === '3');
       setBranchData(filteredData);
@@ -154,7 +155,7 @@ const Branch3SpecificScreen = () => {
     try {
       // Include the branch ID in the updated data
       updatedBranchData.branchID = '3'; // Update the branch ID to 3
-      const response = await fetch('http://146.190.32.150:5000/updateBranchDetails', {
+      const response = await fetch(`${IP_ADDRESS}/updateBranchDetails`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -187,7 +188,7 @@ const Branch3SpecificScreen = () => {
   const handleCreateClass = async (classDetails) => {
     try {
       // Post class details to the server
-      const response = await axios.post('http://146.190.32.150:5000/createClass', classDetails);
+      const response = await axios.post(`${IP_ADDRESS}/createClass`, classDetails);
   
       if (response.status === 201) {
         // Show success message
