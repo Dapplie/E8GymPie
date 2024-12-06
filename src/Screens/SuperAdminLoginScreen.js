@@ -16,6 +16,10 @@ const SuperAdminLoginScreen = () => {
 
       // Check if authentication is successful based on the response
       if (response.ok) {
+
+        setEmail('');
+        setSecurityCode('');
+        
         navigation.navigate('SuperAdminDashboardScreen'); // Navigate to SuperAdminDashboardScreen if authentication is successful
       } else {
         alert('Invalid credentials'); // Show alert for invalid credentials using Alert.alert
@@ -33,6 +37,8 @@ const SuperAdminLoginScreen = () => {
         returned = JSON.parse(await response.text())
         console.error(returned)
         setBranch(returned["admin"]);
+        setEmail('');
+        setSecurityCode('');
         navigation.navigate('AdminDashboardScreen', { admin: returned["admin"] }); // Pass branch to AdminDashboardScreen
       } else {
         alert('Invalid credentials');

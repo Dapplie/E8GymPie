@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "E8GYM",
-    "slug": "e8gym-cpmcgnta2edqffxegt3",
+    "slug": "e8gym",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "assets/icon.png",
@@ -48,9 +48,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "9557c681-321a-4c6d-a6d2-56237d3d1578"
+        "projectId": "d63b3e1e-4e98-4567-b3a2-c92db9f6bb18"
       }
-    }
+    },
+    "owner": "dapss"
   }
 }
-

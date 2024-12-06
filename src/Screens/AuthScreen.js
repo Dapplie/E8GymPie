@@ -79,6 +79,7 @@ const AuthScreen = () => {
       });
       if (response.status === 201 && response.data.message === 'User signed up successfully') {
         const userId = response.data.user.insertedId;
+        await AsyncStorage.clear(); // Clears all keys
         await AsyncStorage.setItem('userId', userId);
         await AsyncStorage.setItem('fullName', fullName); // Store full name in AsyncStorage
         await AsyncStorage.setItem('email', email); // Store email in AsyncStorage
@@ -112,6 +113,7 @@ const AuthScreen = () => {
         });
 
         if (response.status === 200 && response.data.message === 'User signed in successfully') {
+          await AsyncStorage.clear(); // Clears all keys
           await AsyncStorage.setItem('userId', response.data.userId);
           await AsyncStorage.setItem("fullName", response.data.fullName);
           await AsyncStorage.setItem("email", response.data.email);
@@ -123,6 +125,10 @@ const AuthScreen = () => {
           const branch = response.data.branch;
           console.log("hhhhhhhhhhiiiiiiiiiiiiaaaaaaaaaaaaaaaaaaaaaaaaaaaammmmmmmmmmmmmmmmmmmmmmmmmmmmm");
 
+        
+        setEmail('');
+        setPassword('');
+        
           navigation.navigate('Dashboard', { fullName: fullName, email: email, uid: uid, branch: branch });
 
         } else {
