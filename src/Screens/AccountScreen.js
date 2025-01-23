@@ -86,22 +86,7 @@ const AccountScreen = ({ navigation }) => {
 
       console.log("this is the user id ", UserId);
 
-      //const classesAttended = userData.attended || 0;
-      // const photosAttached = userData.photosAttached || 0;
-      // const bookingsMade = userData.bookingsMade || 0;
 
-     
-    //  if (classesAttended >= 36) newRank = 'Amateur';
-      // if (classesAttended >= 70 || photosAttached >= 10 || bookingsMade >= 20) newRank = 'Semi-pro';
-      // if (classesAttended >= 140 || photosAttached >= 20 || bookingsMade >= 40) newRank = 'Pro Athlete';
-      // if (classesAttended >= 235 || photosAttached >= 30 || bookingsMade >= 60) newRank = 'MVP';
-      // if (classesAttended >= 425 || photosAttached >= 50 || bookingsMade >= 100) newRank = 'Hall of Famer';
-
-      // Update the user's rank on the server
-      // await updateServerRank(userId, newRank);
-
-      // Save the new rank to AsyncStorage
-      //await AsyncStorage.setItem('userRank', newRank);
 
       
 
@@ -112,37 +97,7 @@ const AccountScreen = ({ navigation }) => {
     }
   };
 
-  // const updateServerRank = async (userId, newRank) => {
-  //   try {
-  //     await axios.post(`${IP_ADDRESS}/updateUserRank`, { userId, newRank });
-  //   } catch (error) {
-  //     console.error('Error updating user rank on the server:', error);
-  //   }
-  // };
 
-  // Retrieve the user's rank when the component mounts
-  // const fetchUserRank = async () => {
-  //   try {
-  //     const userRank = await AsyncStorage.getItem('userRank');
-  //     if (userRank) {
-  //       setRank(userRank);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching user rank:', error);
-  //   }
-  // };
-
-  // Retrieve the user's rank when the component mounts
-      // const fetchUserRank = async () => {
-      //   try {
-      //     const userRank = await AsyncStorage.getItem('userRank');
-      //     if (userRank) {
-      //       setRank(userRank);
-      //     }
-      //   } catch (error) {
-      //     console.error('Error fetching user rank:', error);
-      //   }
-      // };
 
            // Call fetchData when the screen is focused
             useFocusEffect(
@@ -213,107 +168,6 @@ const AccountScreen = ({ navigation }) => {
 
     setSelectedClasses(updatedSelectedClasses);
   };
-
-  // const renderCheckboxes = () => {
-  //   const checkboxes = [];
-  //   let totalCheckboxes = 0;
-  //   let cols = 10; // Default to 5 columns
-  //   const checkboxMargin = 10; // Adjust as needed
-
-  //   // Determine the total number of checkboxes and adjust rows and columns accordingly based on the user's rank
-  //   switch (rank) {
-  //     case 'Benchwarmer':
-  //       totalCheckboxes = 10;
-  //       break;
-  //     case 'Amateur':
-  //       totalCheckboxes = 36;
-  //       break;
-  //     case 'Semi-pro':
-  //       totalCheckboxes = 70;
-  //       break;
-  //     case 'Pro Athlete':
-  //       totalCheckboxes = 140;
-  //       break;
-  //     case 'MVP':
-  //       totalCheckboxes = 235;
-  //       break;
-  //     case 'Hall of Famer':
-  //       totalCheckboxes = 425;
-  //       break;
-  //     default:
-  //       totalCheckboxes = 10; // Default to Benchwarmer if rank is not recognized
-  //   }
-
-  //   // Calculate the number of rows based on the totalCheckboxes
-  //   const rows = Math.ceil(totalCheckboxes / cols);
-
-  //   for (let row = 0; row < rows; row++) {
-  //     const rowCheckboxes = [];
-  //     for (let col = 0; col < cols; col++) {
-  //       const checkboxIndex = row * cols + col;
-  //       if (checkboxIndex < totalCheckboxes) {
-  //         rowCheckboxes.push(
-  //           <TouchableOpacity key={checkboxIndex} onPress={() => handleCheckboxClick(checkboxIndex)}>
-  //             <View style={[styles.classCheckbox, selectedClasses.includes(checkboxIndex) && styles.classSelected]}>
-  //               {selectedClasses.includes(checkboxIndex) && <Ionicons name="checkmark-circle" size={24} color="orange" />}
-  //             </View>
-  //           </TouchableOpacity>
-  //         );
-  //       }
-  //     }
-  //     checkboxes.push(
-  //       <View key={row} style={[styles.checkboxRow, { marginTop: checkboxMargin }]}>
-  //         {rowCheckboxes}
-  //       </View>
-  //     );
-  //   }
-  //   return checkboxes;
-  // };
-
-  // const handleCheckboxClick = (index) => {
-  //   if (selectedClasses.includes(index)) {
-  //     setSelectedClasses(selectedClasses.filter((item) => item !== index));
-  //     setBoxesTicked(boxesTicked - 1);
-  //   } else {
-  //     setSelectedClasses([...selectedClasses, index]);
-  //     setBoxesTicked(boxesTicked + 1);
-  //   }
-
-  //   // Check if the user is a Benchwarmer and has completed 10 actions
-  //   if (rank === 'Benchwarmer' && boxesTicked + 1 >= 10) { // Adjusted to 10 since it's 0-indexed
-  //     updateUserRank('Amateur');
-  //   }
-
-  //   // Check if the user is an Amateur and has completed 36 actions
-  //   if (rank === 'Amateur' && boxesTicked + 1 >= 36) { // Adjusted to 36 since it's 0-indexed
-  //     updateUserRank('Semi-pro');
-  //   }
-
-  //   // Check if the user is a Semi-pro and has completed 70 actions
-  //   if (rank === 'Semi-pro' && boxesTicked + 1 >= 70) { // Adjusted to 70 since it's 0-indexed
-  //     updateUserRank('Pro Athlete');
-  //   }
-
-  //   // Check if the user is a Pro Athlete and has completed 140 actions
-  //   if (rank === 'Pro Athlete' && boxesTicked + 1 >= 140) { // Adjusted to 140 since it's 0-indexed
-  //     updateUserRank('MVP');
-  //   }
-
-  //   // Check if the user is an MVP and has completed 235 actions
-  //   if (rank === 'MVP' && boxesTicked + 1 >= 235) { // Adjusted to 235 since it's 0-indexed
-  //     updateUserRank('Hall of Famer');
-  //   }
-  // };
-
-  // Function to update user rank
-  // const updateUserRank = async (newRank) => {
-  //   try {
-  //     setRank(newRank); // Update state
-  //     await AsyncStorage.setItem('userRank', newRank); // Update AsyncStorage
-  //   } catch (error) {
-  //     console.error('Error updating user rank:', error);
-  //   }
-  // };
 
 
 

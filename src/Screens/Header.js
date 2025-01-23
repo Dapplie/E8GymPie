@@ -53,8 +53,8 @@ const Header = ({ title }) => {
       </View> 
       <TouchableOpacity onPress={toggleMenu}>
         <Image
-          source={require('../../assets/burger-bar.png')}
-          style={[styles.burgerIcon, styles.whiteBorder]}
+          source={require('../../assets/burger-bar2.png')}
+          style={[styles.burgerIcon]}
           resizeMode="contain"
         />
       </TouchableOpacity>
@@ -63,37 +63,37 @@ const Header = ({ title }) => {
           <TouchableOpacity style={styles.closeIconContainer} onPress={closeMenu}>
             <Image
               source={require('../../assets/close.png')}
-              style={[styles.closeIcon, styles.whiteBorder]}
+              style={[styles.closeIcon]}  // , styles.whiteBorder
               resizeMode="contain"
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={navigateToAccountScreen}>
             <View style={styles.userIconContainer}>
-              <Image
+              {/* <Image
                 source={require('../../assets/user.png')}
                 style={[styles.userIcon, styles.whiteBorder]}
                 resizeMode="contain"
-              />
+              /> */}
               <Text style={[styles.menuText, styles.whiteText]}>Account</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={navigateToContactUs}>
             <View style={styles.settingsIconContainer}>
-              <Image
+              {/* <Image
                 source={require('../../assets/chat.png')}
                 style={[styles.userIcon, styles.whiteBorder]}
                 resizeMode="contain"
-              />
+              /> */}
               <Text style={[styles.menuText, styles.whiteText]}>Contact Us</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={navigateToSettingsScreen}>
             <View style={styles.settingsIconContainer}>
-              <Image
+              {/* <Image
                 source={require('../../assets/settings.png')}
                 style={[styles.userIcon, styles.whiteBorder]}
                 resizeMode="contain"
-              />
+              /> */}
               <Text style={[styles.menuText, styles.whiteText]}>Settings</Text>
             </View>
           </TouchableOpacity>
@@ -109,11 +109,11 @@ const Header = ({ title }) => {
           </TouchableOpacity> */}
           <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>
             <View style={styles.settingsIconContainer}>
-              <Image
+              {/* <Image
                 source={require('../../assets/signout.png')}
                 style={[styles.userIcon, styles.whiteBorder]}
                 resizeMode="contain"
-              />
+              /> */}
               <Text style={[styles.menuText, styles.whiteText]}>Sign Out</Text>
             </View>
           </TouchableOpacity>
@@ -133,8 +133,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   burgerIcon: {
-    width: 30,
-    height: 30,
+    width: 40,
+    height: 40,
   },
   logoContainer: {
     flex: 1,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Button } from 'react-native';
 import Header from '../Screens/Header';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,6 +16,7 @@ const DashboardScreen = ({ route, navigation }) => {
   const [bmiHeightInch, setBmiHeightInch] = useState('');
   const [bmiResult, setBmiResult] = useState(null);
   const { fullName, email, uid, branch } = route.params;
+  const [image, setImage] = useState(null);
   console.log("DashBoardScreen")
   console.log(route.params)
   // get the route.params and make sure you have email and fullName here 
@@ -36,6 +37,27 @@ const DashboardScreen = ({ route, navigation }) => {
   const handleSecondImagePressOut = () => {
     setIsSecondImageHovered(false);
   };
+
+
+   // Fetch user image from the backend
+   useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const response = await axios.post(`${IP_ADDRESS}/get-image`, { UserId: uid });
+        if (response.data.status === 'ok' && response.data.imageUrl) {
+          setImage(response.data.imageUrl);
+        } else {
+          console.log('Image not found for user.');
+          setImage(null); // Fallback to default or null
+        }
+      } catch (error) {
+        console.error('Error fetching image:', error.message);
+        setImage(null); // Fallback to default or null
+      }
+    };
+
+    fetchImage();
+  }, [uid]);
 
   const handleBookNowPress = () => {
     console.log(`DashBoard ${fullName} &&  ${email}`);
@@ -94,7 +116,19 @@ const DashboardScreen = ({ route, navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <Header />
-      <View style={{ backgroundColor: 'black', flex: 1, marginBottom: 40, alignItems: 'center', justifyContent: 'center' }}>
+      <View>
+        {/* Display User Image */}
+        {image ? (
+          <Image source={{ uri: image }} style={styles.userImage} />
+        ) : (
+          <Image
+            source={require('../../assets/user.png')} // Use a local default image
+            style={styles.userImage}
+          />
+        )}
+      </View>
+      <View style={{ backgroundColor: 'black', flex: 1, marginBottom: 40, alignItems: 'center', justifyContent: 'center', top: -60,
+    position: 'relative'}}>
         <Image
           source={require('../../assets/own33.jpg')}
           style={{ width: 200, height: 200, marginBottom: 20 }}
@@ -108,63 +142,7 @@ const DashboardScreen = ({ route, navigation }) => {
         </Text>
       </View>
 
-      {/* <View style={styles.additionalContainer}>
-        <View style={styles.additionalContent}>
-          <Text style={styles.additionalSubTitle}>E8 Online</Text>
-          <Text style={styles.additionalTitle}>Our Classes</Text>
-          <Text style={styles.additionalParagraph}>
-            In the digital age, we understand the need for flexibility and accessibility in sports training.
-            E8 Online is our online training platform, offering you a wealth of resources, workouts, and expert guidance from the comfort of your own space.
-            Our virtual training programs are designed to cater to all levels of fitness enthusiasts, helping you stay on track and achieve your goals.
-          </Text>
-          <View style={styles.additionalImagesContainer}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('EShop')} // Navigate to EShopScreen
-              onPressIn={handleFirstImagePressIn}
-              onPressOut={handleFirstImagePressOut}
-              style={{ marginRight: 20, opacity: isFirstImageHovered ? 0.7 : 1 }}
-            >
-              <View style={styles.imageContainer}>
-                <Image
-                  source={require('../../assets/travelpack.jpg')}
-                  style={styles.additionalImage}
-                  resizeMode="contain"
-                />
-                <Text style={styles.imageText}>Travel Pack</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-          onPress={() => navigation.navigate('EShop')} // Navigate to EShopScreen
-          onPressIn={handleSecondImagePressIn}
-          onPressOut={handleSecondImagePressOut}
-          style={{ opacity: isSecondImageHovered ? 0.7 : 1 }}
-        >
-              <View style={styles.imageContainer}>
-                <Image
-                  source={require('../../assets/homepack.jpg')}
-                  style={styles.additionalImage}
-                  resizeMode="contain"
-                />
-                <Text style={styles.imageText}>Home Pack</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>*/}
-      {/* <View style={[styles.section, { flexDirection: 'row', justifyContent: 'space-between' }]}>
-        <View>
-          <Text style={styles.sectionTitle}>E8 Online</Text>
-          <Text style={styles.sectionSubtitle}>Our Packs</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('EShop')}  style={styles.buyNowButton}>
-            <Text style={styles.buyNowText}>Buy Now</Text>
-          </TouchableOpacity>
-        </View>
-        <Image
-          source={require('../../assets/travelpack.jpg')}
-          style={styles.sectionImage}
-          resizeMode="contain"
-        />
-      </View> */}
+     
 
       <View style={{ flexDirection: 'row', borderRadius: 10, borderWidth: 1, borderColor: 'white', justifyContent: 'space-between', backgroundColor: '#1a1a1a', padding: 20, borderRadius: 10, marginBottom: 20 }}>
         <View style={{ flex: 1 }}>
@@ -349,6 +327,15 @@ const DashboardScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  userImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: '#fff',
+    zIndex: 2,
+    marginLeft: 10,
+  },
   container: {
     flex: 1,
     padding: 20,

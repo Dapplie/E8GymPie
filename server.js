@@ -18,7 +18,8 @@ const moment = require('moment-timezone');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-const uri = 'mongodb+srv://JohnnySadaka:.vvZLFoJfu=d@cluster0.yfux0.mongodb.net/';
+// WORKING VERSION LAST EDIT const uri = 'mongodb+srv://JohnnySadaka:.vvZLFoJfu=d@cluster0.yfux0.mongodb.net/';
+const uri = 'mongodb://127.0.0.1:27017/E8GYMFINAL';
 //const uri = 'mongodb+srv://boughosnjuliano:q7wkLINHFnEUBleP@cluster0.759muhe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 app.use(bodyParser.json())
@@ -28,20 +29,20 @@ app.use(cors());
 const client = new MongoClient(uri);
 
 
+//We shouldn't use this anymore
+// async function connectToDatabase() {
+//   const client = new MongoClient(uri);
 
-async function connectToDatabase() {
-  const client = new MongoClient(uri);
+//   try {
 
-  try {
-
-    await client.connect();
-    console.log('Connected to MongoDB');
-    return client.db('E8GYMFINAL');
-  } catch (error) {
-    console.error('Error connecting to MongoDB:', error);
-    return null;
-  }
-}
+//     await client.connect();
+//     console.log('Connected to MongoDB');
+//     return client.db('E8GYMFINAL');
+//   } catch (error) {
+//     console.error('Error connecting to MongoDB:', error);
+//     return null;
+//   }
+// }
 
 
 const storage = multer.diskStorage({
@@ -64,13 +65,14 @@ app.post("/upload-image", upload.single("image"), async (req, res) => {
     console.log("File uploaded successfully:", req.file);
 
     const imageName = req.file.filename;
-    const db = await connectToDatabase();
 
-    if (!db) {
-      return res.status(500).json({ status: "error", message: "Database connection failed" });
-    }
-
+    let client; // Declare client variable for MongoDB connection
     try {
+      // Create a new MongoClient connection using the URI
+      client = new MongoClient(uri);
+      await client.connect(); // Connect to MongoDB
+
+      const db = client.db(); // Access the database
       const imageDetailsCollection = db.collection("ImageDetails");
 
       // Check if an entry for the UserId already exists
@@ -94,7 +96,15 @@ app.post("/upload-image", upload.single("image"), async (req, res) => {
       console.error("Error handling image in database:", error);
       return res.status(500).json({ status: "error", message: String(error.message || error) });
     } finally {
-      await client.close();
+      // Ensure the client is closed in both success and error scenarios
+      if (client) {
+        try {
+          await client.close();
+          console.log("upload image: Connection closed");
+        } catch (closeError) {
+          console.error("Error closing MongoDB connection:", closeError);
+        }
+      }
     }
   } else {
     console.error("File not received:", req.file);
@@ -111,13 +121,13 @@ app.post("/get-image", async (req, res) => {
     return res.status(400).json({ status: "error", message: "UserId is required" });
   }
 
-  const db = await connectToDatabase();
-
-  if (!db) {
-    return res.status(500).json({ status: "error", message: "Database connection failed" });
-  }
-
+  let client; // Declare client variable for MongoDB connection
   try {
+    // Create a new MongoClient connection using the URI
+    client = new MongoClient(uri);
+    await client.connect(); // Connect to MongoDB
+
+    const db = client.db(); // Access the database
     const imageDetailsCollection = db.collection("ImageDetails");
 
     // Find the image document by UserId
@@ -134,101 +144,31 @@ app.post("/get-image", async (req, res) => {
     console.error("Error retrieving image from database:", error);
     return res.status(500).json({ status: "error", message: String(error.message || error) });
   } finally {
-    await client.close();
+    // Ensure the client is closed in both success and error scenarios
+    if (client) {
+      try {
+        await client.close();
+        console.log("get-image: Connection closed");
+      } catch (closeError) {
+        console.error("Error closing MongoDB connection:", closeError);
+      }
+    }
   }
 });
 
-//API to delete all Expired Classes in ClassShcedule collection
 
 
-// // Function to delete expired classes automatically
-// async function deleteExpiredClasses() {
-//   const db = await connectToDatabase();
-//   if (!db) return;
-
-//   const collection = db.collection('ClassShcedule');
-
-//   try {
-//     const currentDate = new Date();
-
-//     // Delete documents where endDate has passed
-//     const result = await collection.deleteMany({
-//       endDate: { $lte: currentDate.toISOString() },
-//     });
-
-//     console.log(`${result.deletedCount} expired classes deleted.`);
-//   } catch (error) {
-//     console.error('Error deleting expired classes:', error);
-//   }
-// }
-
-// // Schedule the deletion task to run every day at midnight
-// cron.schedule('*/3 * * * *', async () => {
-//   console.log('Running scheduled task to delete expired classes...');
-//   await deleteExpiredClasses();
-// });
-
-// Function to delete expired classes automatically
-// Function to delete expired classes automatically
-
-
-// Function to delete expired classes automatically
-
-// // Function to delete expired classes automatically
-// async function deleteExpiredClasses() {
-//   const db = await connectToDatabase();
-//   if (!db) return;
-
-//   const classScheduleCollection = db.collection('ClassShcedule');
-//   const classBookingCollection = db.collection('ClassBooking');
-
-//   try {
-//     const currentDate = new Date();
-
-//     // Find expired classes
-//     const expiredClasses = await classScheduleCollection.find({
-//       endDate: { $lte: currentDate.toISOString() },
-//     }).toArray();
-
-//     if (expiredClasses.length === 0) {
-//       console.log('No expired classes found.');
-//       return;
-//     }
-
-//     // Collect expired class IDs (in ObjectId format)
-//     const classIds = expiredClasses.map(classItem => classItem._id);
-
-//     // Convert ObjectId to string format to match ClsId in ClassBooking
-//     const classIdsAsStrings = classIds.map(id => id.toString());
-
-//     console.log('Expired Classes:', expiredClasses);
-//     console.log('Class IDs (ObjectId):', classIds);
-//     console.log('Class IDs as Strings:', classIdsAsStrings);
-
-//     // Delete bookings from ClassBooking collection where ClsId matches
-//     const deleteBookingResult = await classBookingCollection.deleteMany({
-//       ClsId: { $in: classIdsAsStrings },
-//     });
-
-//     console.log(`${deleteBookingResult.deletedCount} bookings deleted from ClassBooking.`);
-
-//     // Delete expired classes from ClassShcedule collection
-//     const deleteScheduleResult = await classScheduleCollection.deleteMany({
-//       _id: { $in: classIds },
-//     });
-
-//     console.log(`${deleteScheduleResult.deletedCount} expired classes deleted from ClassShcedule.`);
-//   } catch (error) {
-//     console.error('Error deleting expired classes and bookings:', error);
-//   }
-// }
 async function cleanExpiredClasses() {
   const now = new Date();
-  // Connect to the database
-  const db = await connectToDatabase();
-  if (!db) return;
+
+  let client; // Declare client variable for use in finally block
 
   try {
+    // Create a new connection to the database
+    client = new MongoClient(uri);
+    await client.connect();
+    const db = client.db(); // Get default database
+
     const classScheduleCollection = db.collection("ClassShcedule");
     const classBookingCollection = db.collection("ClassBooking");
 
@@ -261,6 +201,7 @@ async function cleanExpiredClasses() {
   } finally {
     if (client) {
       await client.close();
+      console.log("clean expired classes closed");
     }
   }
 }
@@ -272,96 +213,34 @@ cron.schedule("0 6 * * *", async () => {
 });
 
 
-// // Route to get all images from MongoDB
-// app.get("/get-images", async (req, res) => {
-//   const db = await connectToDatabase();
-
-//   if (!db) {
-//     return res.status(500).json({ status: "error", message: "Database connection failed" });
-//   }
-
-//   try {
-//     const imageDetailsCollection = db.collection("ImageDetails");
-//     const images = await imageDetailsCollection.find({}).toArray();
-
-//     // Return image IDs and filenames to frontend
-//     return res.status(200).json(images.map(image => ({ id: image._id, filename: image.image })));
-//   } catch (error) {
-//     console.error("Error retrieving images:", error);
-//     return res.status(500).json({ status: "error", message: "Error retrieving images" });
-//   } finally {
-//     await client.close();
-//   }
-// });
 
 
-// // API route for getting a specific image from MongoDB
-// app.get("/get-image/:id", async (req, res) => {
-//   const { id } = req.params; // Extract the id from the request parameters
-//   const db = await connectToDatabase();
-
-//   if (!db) {
-//     return res.status(500).json({ status: "error", message: "Database connection failed" });
-//   }
-
-//   try {
-//     const imageDetailsCollection = db.collection("ImageDetails");
-//     const image = await imageDetailsCollection.findOne({ _id: new ObjectId(id) }); // Fetch the specific image
-
-//     if (!image) {
-//       return res.status(404).json({ status: "error", message: "Image not found" });
-//     }
-
-//     // Send back the image data
-//     return res.status(200).json({ status: "ok", image });
-//   } catch (error) {
-//     console.error("Error fetching image from database:", error);
-//     return res.status(500).json({ status: "error", message: String(error.message || error) });
-//   } finally {
-//     await client.close();
-//   }
-// });
-
-
-// app.get("/get-image/:id", async (req, res) => {
-//   try {
-//     const data = await Images.findById(req.params.id, 'name'); // Fetches only the 'name' field for the specified ID
-//     if (data) {
-//       res.send({ status: "ok", data: data });
-//     } else {
-//       res.status(404).send({ status: "error", message: "Image not found" });
-//     }
-//   } catch (error) {
-//     res.status(500).send({ status: "error", message: error.message });
-//   }
-// });
-
-
-// app.get("/get-image", async (req, res) => {
-//   try {
-//     const data = await Images.find({});
-//     res.send({ status: "ok", data: data });
-//   } catch (error) {
-//     res.status(500).send({ status: "error", message: error.message });
-//   }
-// });
 
 
 
 
 async function updateWeeklyAttendance() {
-  const db = await connectToDatabase();
-  const classBookingCollection = db.collection('ClassBooking');
-  const classScheduleCollection = db.collection('ClassShcedule'); // Correcting typo from 'ClassShcedule' to 'ClassSchedule'
-  const usersCollection = db.collection('Users');
+  let client; // Declare the client here for later closing
 
   try {
     console.log('Starting weekly attendance update...');
 
+    // Create a new MongoClient connection using the URI
+    client = new MongoClient(uri);
+    await client.connect(); // Connect to MongoDB
+
+    // Access the database
+    const db = client.db(); // Get the database instance
+    const classBookingCollection = db.collection('ClassBooking');
+    const classShceduleCollection = db.collection('ClassShcedule'); // Correcting typo from 'ClassShcedule' to 'ClassSchedule'
+    const usersCollection = db.collection('Users');
+
+    // Get the current date
+    const currentDate = new Date();
+
     // Find all active classes
-    const currentDate = new Date(); // Get the current date
-    const activeClasses = await classScheduleCollection.find({
-      endDate: { $gte: currentDate.toISOString() } // Compare using ISO string format
+    const activeClasses = await classShceduleCollection.find({
+      endDate: { $gte: currentDate.toISOString() }, // Compare using ISO string format
     }).toArray();
     console.log(`Active classes found: ${activeClasses.length}`);
 
@@ -371,7 +250,7 @@ async function updateWeeklyAttendance() {
 
       // Find bookings for the current class
       const bookings = await classBookingCollection.find({
-        clsId: cls._id.toString()
+        clsId: cls._id.toString(),
       }).toArray();
       console.log(`Bookings found for class ID ${cls._id}: ${bookings.length}`);
 
@@ -400,17 +279,28 @@ async function updateWeeklyAttendance() {
           // User does not exist, create a new document with attended set to attendanceCount
           const result = await usersCollection.insertOne({
             _id: new ObjectId(userId),
-            attended: attendanceCount
+            attended: attendanceCount,
           });
-          console.log(`Inserted new user ID ${userId} with attended count: ${attendanceCount}`, result);
+          //console.log(`Inserted new user ID ${userId} with attended count: ${attendanceCount}`, result);
         }
       }
     }
     console.log('Weekly attendance update completed successfully.');
   } catch (error) {
     console.error('Error updating weekly attendance:', error);
+  } finally {
+    // Ensure connection is closed after the operation is complete
+    if (client) {
+      try {
+        await client.close();
+        console.log('updateWeeklyAttendance: Database connection closed');
+      } catch (closeError) {
+        console.error('Error closing MongoDB connection:', closeError);
+      }
+    }
   }
 }
+
 
 // Schedule the function to run every Sunday at midnight
 cron.schedule('0 0 * * 0', async () => {
@@ -431,20 +321,6 @@ app.post('/testWeeklyAttendance', async (req, res) => {
 
 
 
-
-
-// async function connectToDatabase() {
-//   const client = new MongoClient(uri);
-
-//   try {
-//     await client.connect();
-//     console.log('Connected to MongoDB');
-//     return client.db('E8GYMFINAL');
-//   } catch (error) {
-//     console.error('Error connecting to MongoDB:', error);
-//     return null;
-//   }
-// }
 // Function to fetch user by ID from MongoDB
 async function getId(insertedId) {
   const client = new MongoClient(uri);
@@ -462,6 +338,7 @@ async function getId(insertedId) {
     return null;
   } finally {
     await client.close();
+    console.log("get id closed");
   }
 }
 
@@ -483,35 +360,31 @@ async function fetchData(collectionName, filter = {}) {
     return null;
   } finally {
     await client.close();
+    console.log("cpllection name function closed");
   }
 }
 
 // Route for creating a new class
 app.post('/createClass', async (req, res) => {
-  /*
-        'className':className,
-        'instructor':instructor,
-        'time':schedule,
-        'name':className,
-        'availability':availability,
-        'description':description,
-        'capacity':capacity
-    */
   const { className, instructor, time, description, capacity, branch } = req.body;
 
+  console.log("createClass normal called");
+  console.log("Request body:", req.body);
+
+  let client; // Declare client here to close later
+
   try {
-    const db = await connectToDatabase();
-    if (!db) {
-      return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-    }
-    console.log("Logging Body ")
-    console.log(req.body)
-    // console.log(req)
-    const collectionName = "ClassShcedule";
+    // Create a new MongoClient connection using the URI
+    client = new MongoClient(uri);
+    await client.connect(); // Connect to MongoDB
 
-
+    // Access the database
+    const db = client.db(); // Get the database instance
+    const collectionName = "ClassShcedule"; // this is not a typo
     const collection = db.collection(collectionName);
-    const result = await collection.insertOne({
+
+    // Insert a new class document
+    await collection.insertOne({
       className: className,
       name: className,
       instructor: instructor,
@@ -521,52 +394,54 @@ app.post('/createClass', async (req, res) => {
       id: Date.now().toString(),
       availability: "Available",
       participants: 0,
-      capacity: capacity
+      capacity: capacity,
     });
 
-    res.status(200).json({ message: 'Class created successfully 11' });
+    console.log("Class created successfully");
+    res.status(200).json({ message: 'Class created successfully' });
 
   } catch (error) {
-    console.error('Error creating class: 33', error);
-    res.status(500).json({ error: 'Error creating class 44' });
+    console.error('Error creating class:', error);
+    res.status(500).json({ error: 'Error creating class' });
+  } finally {
+    // Ensure the client is closed
+    if (client) {
+      try {
+        await client.close();
+        console.log("MongoDB connection closed for createClass");
+      } catch (closeError) {
+        console.error("Error closing MongoDB connection:", closeError);
+      }
+    }
   }
 });
 
 
+
+
 app.post('/createClassesNew', async (req, res) => {
-  /*
-      'className': className,
-      'instructor': instructor,
-      'startDate': startDate.toISOString(),
-      'endDate': endDate.toISOString(),
-      'the_date': theDates,
-      'days': days,
-      'name': className,
-      'description': description,
-      'capacity': capacity,
-      'branch': branch
-    */
   const { className, instructor, startDate, endDate, the_date, days, name, description, capacity, branch } = req.body;
 
   console.log(req.body);
+  console.log("create classes new 1 called");
+
+  let client; // Declare client here to close later
 
   try {
-    const db = await connectToDatabase();
-    if (!db) {
-      return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-    }
+    // Create a new MongoClient connection using the URI
+    client = new MongoClient(uri);
+    await client.connect(); // Connect to MongoDB
 
-    console.log("Logging Body");
-    console.log(req.body);
-
-    const classCollection = db.collection("ClassShcedule"); // Corrected typo here
+    // Access the database
+    const db = client.db(); // Get the database instance
+    const classCollection = db.collection("ClassShcedule"); // this is not a typo
     const adminBranchCollection = db.collection("adminbranches");
 
     // Fetch all branch IDs from adminbranches
     const branches = await adminBranchCollection.find({}).toArray();
 
     // Create a new class record for each branch ID
-    classID = Date.now().toString();
+    const classID = Date.now().toString();
     const promises = branches.map(branch => {
       return classCollection.insertOne({
         className: className,
@@ -589,45 +464,53 @@ app.post('/createClassesNew', async (req, res) => {
     // Wait for all insertions to complete
     await Promise.all(promises);
 
+    // Send response first
     res.status(200).json({ message: 'Classes created successfully for all branches' });
 
   } catch (error) {
     console.error('Error creating classes:', error);
     res.status(500).json({ error: 'Error creating classes' });
+    
+  } finally {
+    // Ensure the client is closed in case of success or failure
+    if (client) {
+      try {
+        await client.close();
+        console.log("create classes new database connection closed");
+      } catch (closeError) {
+        console.error("Error closing MongoDB connection:", closeError);
+      }
+    }
   }
 });
 
 
 
 
+
+
+
 app.post('/createClassNew', async (req, res) => {
-  /*
-      'className': className,
-      'instructor': instructor,
-      'startDate': startDate.toISOString(),
-      'endDate': endDate.toISOString(),
-      'the_date': theDates,
-      'days': days,
-      'name': className,
-      'description': description,
-      'capacity': capacity,
-      'branch': branch
-    */
   const { className, instructor, startDate, endDate, the_date, days, name, description, capacity, branch } = req.body;
+  console.log("create class new 2 !!! called");
+
+  let client; // Declare client here to close later
 
   try {
-    const db = await connectToDatabase();
-    if (!db) {
-      return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-    }
-    console.log("Logging Body ")
-    console.log(req.body)
-    // console.log(req)
-    const collectionName = "ClassShcedule";
+    // Create a new MongoClient connection using the URI
+    client = new MongoClient(uri);
+    await client.connect(); // Connect to MongoDB
 
-
+    // Access the database
+    const db = client.db(); // Get the database instance
+    const collectionName = "ClassShcedule"; //this is not a typo
     const collection = db.collection(collectionName);
-    const result = await collection.insertOne({
+
+    console.log("Logging Body");
+    console.log(req.body);
+
+    // Insert a new class document
+    await collection.insertOne({
       className: className,
       name: name,
       instructor: instructor,
@@ -640,55 +523,95 @@ app.post('/createClassNew', async (req, res) => {
       id: Date.now().toString(),
       availability: "Available",
       participants: 0,
-      capacity: capacity
+      capacity: capacity,
     });
 
-    res.status(200).json({ message: 'Class created successfully 11' });
+    console.log("Class created successfully");
+    res.status(200).json({ message: 'Class created successfully' });
 
   } catch (error) {
-    console.error('Error creating class: 33', error);
-    res.status(500).json({ error: 'Error creating class 44' });
+    console.error('Error creating class:', error);
+    res.status(500).json({ error: 'Error creating class' });
+
+  } finally {
+    // Ensure the client is closed
+    try {
+      if (client) {
+        await client.close();
+        console.log("createClassNew: Database connection closed");
+      }
+    } catch (closeError) {
+      console.error("Error closing MongoDB connection:", closeError);
+    }
   }
 });
 
 
+
 app.get('/fetchAllBranchesGroupedClasses', async (req, res) => {
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-  }
-  const agg = [
-    {
-      '$lookup': {
-        'from': 'adminbranches',
-        'localField': 'branch',
-        'foreignField': 'branchID',
-        'as': 'branchDetails'
-      }
-    }, {
-      '$unwind': {
-        'path': '$branchDetails'
-      }
-    }, {
-      '$group': {
-        '_id': '$branch',
-        'classes': {
-          '$push': '$$ROOT'
-        },
-        'branchDetails': {
-          '$first': '$branchDetails'
+  let client;
+
+  try {
+    // Establish a new unique connection for this request
+    client = await MongoClient.connect(uri);
+    const db = client.db();  // Get the database instance
+
+    if (!db) {
+      console.error('Failed to connect to the database.');
+      return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
+    }
+
+    const agg = [
+      {
+        '$lookup': {
+          'from': 'adminbranches',
+          'localField': 'branch',
+          'foreignField': 'branchID',
+          'as': 'branchDetails'
+        }
+      },
+      {
+        '$unwind': {
+          'path': '$branchDetails'
+        }
+      },
+      {
+        '$group': {
+          '_id': '$branch',
+          'classes': {
+            '$push': '$$ROOT'
+          },
+          'branchDetails': {
+            '$first': '$branchDetails'
+          }
         }
       }
+    ];
+
+    const collection = db.collection('ClassShcedule');
+    const cursor = collection.aggregate(agg);
+    const classes = await cursor.toArray();
+
+    return res.status(200).json(classes);
+
+  } catch (error) {
+    console.error('Error fetching grouped classes:', error);
+    return res.status(500).json({ error: 'Internal Server Error Fetching Grouped Classes' });
+  } finally {
+    // Ensure that the connection is closed after the operation
+    try {
+      if (client) {
+        await client.close();
+        console.log('fetchAllBranchesGroupedClasses: Database connection closed');
+      }
+    } catch (closeError) {
+      console.error('Error closing MongoDB connection:', closeError);
     }
-  ];
-
-  const collection = db.collection('ClassShcedule');
-  const cursor = collection.aggregate(agg);
-  const classes = await cursor.toArray();
-  res.status(200).json(classes);
-})
+  }
+});
 
 
+//unused route comment
 // Route for ClassScheduleScreen
 app.get('/ClassScheduleScreen', async (req, res) => {
   const data = await fetchData('ClassShcedule');
@@ -700,41 +623,62 @@ app.get('/ClassScheduleScreen', async (req, res) => {
   }
 });
 
-//1st route for purchase screen booking
+
+
+// 1st route for purchase screen booking
 app.get('/PurchaseInfoScreenBooking', async (req, res) => {
   const userID = req.query.userid;
   console.log("User ID : ", userID);
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-  }
-  const checkOutCollectionbook = db.collection("ClassBooking"); //?? right?
+
+  let client; // Declare client variable for connection
+
   try {
+    // Create a new connection to the database
+    client = new MongoClient(uri);
+    await client.connect();
+    const db = client.db(); // Use the default database
+
+    const checkOutCollectionbook = db.collection("ClassBooking"); // ?? right?
+    
     // Get all Checkouts from the database where UserID matches the parameter userId
     checkOutCollectionbook.find({ "userId": userID }).toArray()
       .then((bookings) => {
-        console.log("Bookings We Got ")
+        console.log("Bookings We Got ");
         console.log(bookings);
         res.json(bookings);
       }).catch(err => {
         console.log(err);
         return res.status(500).json({ error: 'Internal Server Error: Error Fetching Data ' });
-      })
+      });
+
   } catch (err) {
     console.log(err);
-  };
+    return res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    if (client) {
+      await client.close(); // Ensure connection is closed
+      console.log("PurchaseInfoScreenBooking connection closed");
+    }
+  }
 });
 
-//Route for PurchaseinfoScreen
+
+
+// Route for PurchaseInfoScreen
 app.get('/PurchaseInfoScreen', async (req, res) => {
   const userID = req.query.userid;
   console.log("User ID : ", userID);
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-  }
-  const checkOutCollection = db.collection("Checkout");
+
+  let client; // Declare client for the connection
+
   try {
+    // Create a new connection to the database
+    client = new MongoClient(uri);
+    await client.connect();
+    const db = client.db(); // Use the default database
+
+  const checkOutCollection = db.collection("Checkout");
+
     // Get all Checkouts from the database where UserID matches the parameter userId
     checkOutCollection.find({ "userId": userID }).toArray()
       .then((checkOuts) => {
@@ -743,66 +687,115 @@ app.get('/PurchaseInfoScreen', async (req, res) => {
       }).catch(err => {
         console.log(err);
         return res.status(500).json({ error: 'Internal Server Error: Error Fetching Data ' });
-      })
+      });
+
   } catch (err) {
     console.log(err);
-  };
-
+    return res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    if (client) {
+      await client.close(); // Ensure the connection is closed
+      console.log("PurchaseInfoScreen connection closed");
+    }
+  }
 });
-// Get All Branches From  Database and send it as a response
+
+
+
+// Get All Branches From Database and send it as a response
 app.get("/BranchList", async (req, res) => {
-  const db = await connectToDatabase();
-  const branchColletion = db.collection("ClassShcedule");
-  const agg = [
-    {
-      '$group': {
-        '_id': 'Branches',
-        'branch': {
-          '$addToSet': '$branch'
+  let client; // Declare a variable to hold the MongoClient instance
+
+  try {
+    // Create a new connection to the database
+    client = new MongoClient(uri);
+    await client.connect();
+    const db = client.db();
+
+    const branchColletion = db.collection("ClassShcedule");
+    const agg = [
+      {
+        '$group': {
+          '_id': 'Branches',
+          'branch': {
+            '$addToSet': '$branch'
+          }
+        }
+      },
+      {
+        '$unwind': {
+          'path': '$branch'
         }
       }
-    }, {
-      '$unwind': {
-        'path': '$branch'
-      }
+    ];
+
+    const branches = await branchColletion.aggregate(agg).toArray();
+    console.log(branches);
+
+    // Send the branches as a response
+    res.json(branches);
+  } catch (error) {
+    console.error('Error fetching branch list:', error);
+    res.status(500).json({ error: 'Error fetching branch list' });
+  } finally {
+    // Close the MongoDB connection
+    if (client) {
+      await client.close();
+      console.log('BranchList MongoDB connection closed.');
     }
-  ]
-  const branches = await branchColletion.aggregate(agg).toArray();
-  console.log(branches);
-  res.json(branches)
+  }
 });
+
 
 
 app.get('/getBranchesAndClasses', async (req, res) => {
+  let client; // Declare a variable to hold the MongoClient instance
+
   try {
-    const db = await connectToDatabase();
+    // Create a new connection to the database
+    client = new MongoClient(uri);
+    await client.connect();
+    const db = client.db();
+
     const branchColletion = db.collection("ClassShcedule");
-    const branches = await branchColletion.find({}).sort({ 'branch': 1 }).toArray()
+    const branches = await branchColletion.find({}).sort({ 'branch': 1 }).toArray();
     res.json(branches);
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    // Close the MongoDB connection
+    if (client) {
+      await client.close();
+      console.log('/getBranchesAndClasses MongoDB connection closed.');
+    }
   }
-})
+});
 // meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 const { Int32 } = require('mongodb');
 app.post('/cancelBooking', async (req, res) => {
   const { _id } = req.body;
 
-  // Connect to MongoDB (assuming connectToDatabase function exists)
-  const db = await connectToDatabase();
-  if (!db) {
-    return res
-      .status(500)
-      .json({
-        error: "Internal Server Error: Unable to connect to the database",
-      });
-  }
-  console.log(`Canceling for ID ${_id}`)
-  // Get the collections using the established connection
-  const collectionClassBooking = db.collection('ClassBooking');
-  const collectionClassSchedule = db.collection('ClassShcedule');
+  let client; // Declare a variable to hold the MongoClient instance
 
   try {
+    // Create a new connection to the database
+    client = new MongoClient(uri);
+    await client.connect();
+    const db = client.db();
+
+    if (!db) {
+      return res
+        .status(500)
+        .json({
+          error: "Internal Server Error: Unable to connect to the database",
+        });
+    }
+    console.log(`Canceling for ID ${_id}`)
+    // Get the collections using the established connection
+    const collectionClassBooking = db.collection('ClassBooking');
+    const collectionClassSchedule = db.collection('ClassShcedule');
+
     // Find the booking record by _id
     const booking = await collectionClassBooking.findOne({ _id: new ObjectId(_id) });
 
@@ -830,31 +823,46 @@ app.post('/cancelBooking', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Error cancelling booking');
+  } finally {
+    // Close the MongoDB connection
+    if (client) {
+      await client.close();
+      console.log('cancelBooking MongoDB connection closed.');
+    }
   }
 });
 
 app.post('/getBooking', async (req, res) => {
   const { userId, branch } = req.body;
 
-  // Connect to MongoDB (assuming connectToDatabase function exists)
-  const db = await connectToDatabase();
-  if (!db) {
-    return res
-      .status(500)
-      .json({
-        error: "Internal Server Error: Unable to connect to the database",
-      });
-  }
 
-  // Get the collection using the established connection
-  const collectionClassBooking = db.collection('ClassBooking');
+  // Create a new connection for this route
+  const client = new MongoClient(uri);
 
   try {
+    // Connect to MongoDB for this specific request
+    await client.connect();
+    const db = client.db();
+
+    // Get the collection using the established connection
+    const collectionClassBooking = db.collection('ClassBooking');
+
+    // Fetch the bookings for the provided userId and branch
     const bookings = await collectionClassBooking.find({ userId, branch }).toArray();
+
+    // Send the bookings as response
     res.json(bookings);
   } catch (error) {
-    console.error(error);
+    console.error("Error:", error);
     res.status(500).send('Error fetching bookings');
+  } finally {
+    try {
+      // Ensure connection is closed after the DB operation
+      await client.close();
+      console.log('getBooking connection closed');
+    } catch (closeError) {
+      console.error('Error closing MongoDB connection:', closeError);
+    }
   }
 });
 
@@ -867,533 +875,31 @@ const transporter = nodemailer.createTransport({
     pass: 'tdco ogya momt kdee', // Your email password or app-specific password
   },
 });
-//We are using this one 
-// app.post('/ClassBooking', async (req, res) => {
-//   const { username, email, className, time, userid, clsId, branch } = req.body;
-
-//   // Connect to MongoDB
-//   const db = await connectToDatabase();
-//   if (!db) {
-//     return res.status(500).json({
-//       error: "Internal Server Error: Unable to connect to the database",
-//     });
-//   }
-
-//   // Log the received booking information
-//   console.log("Received Booking Information:", {
-//     username,
-//     email,
-//     className,
-//     time,
-//     userid,
-//     clsId,
-//     branch,
-//   });
-
-//   // Search the admins collection for the branch and get all the emails
-//   const collectionAdmins = db.collection('admins');
-//   const admins = await collectionAdmins.find({ branch: branch }).toArray();
-//   if (!admins || admins.length === 0) {
-//     return res.status(500).json({ error: "Internal Server Error: Branch not found in admins" });
-//   }
-//   const adminEmails = admins.map(admin => admin.email);
-
-//   // Retrieve customer's email and phone number from the Users collection
-//   const collectionUsers = db.collection('Users');
-//   const user = await collectionUsers.findOne({ '_id': new ObjectId(userid) });
-//   if (!user) {
-//     return res.status(500).json({ error: "Internal Server Error: User not found" });
-//   }
-//   const customerEmail = user.email;
-//   const customerPhoneNumber = user.phoneNumber;
-
-//   // In order to add client to a class we need to update three collections
-//   const collectionClassBooking = db.collection('ClassBooking');
-//   try {
-//     const existingBooking = await collectionClassBooking.findOne({ 'userId': userid, 'clsId': clsId });
-//     if (existingBooking == null) {
-//       // Check if ClassShcedule availability is not Locked
-//       console.log("Not Null Finding Availability");
-//       const collectionClassShcedule = db.collection('ClassShcedule');
-//       const classSchedule = await collectionClassShcedule.findOne({ '_id': new ObjectId(clsId), 'availability': 'Available' });
-//       console.log("Availability result ");
-//       console.log(classSchedule);
-//       if (classSchedule !== null && classSchedule.participants < classSchedule.capacity) {
-//         // Add user to ClassBooking
-//         const bookingResult = await collectionClassBooking.insertOne({
-//           username: username,
-//           email: email,
-//           className: className,
-//           classTime: time,
-//           userId: userid,
-//           clsId: clsId,
-//           branch: branch,
-//         });
-//         console.log("We Have Insertion result ", bookingResult);
-//         if (bookingResult && bookingResult.hasOwnProperty('insertedId')) {
-//           // Update ClassShcedule participants += 1
-//           const updateResult = await collectionClassShcedule.updateOne(
-//             { _id: new ObjectId(clsId) },
-//             { $inc: { participants: 1 } } // Increment the number of participants by 1
-//           );
-//           console.log("We Have Update result");
-//           console.log(updateResult);
-//           const formatTime = (date) => {
-//             return new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-//           };
-//           let sched = formatTime(classSchedule.the_date[0]);
-//           // Send email to all admins of the branch, the customer, and the super admin
-//           //${classSchedule.the_date.map(date => `<li>${formatTime(date)}</li>`).join('')}
-//           const mailOptions = {
-//             from: 'youremail@gmail.com',
-//             to: [...adminEmails, customerEmail, 'joe843189@gmail.com'].join(','),
-//             subject: 'New Class Booking',
-//             html: `
-//               <div style="background-color: #1a1a1a; color: #f1f1f1; font-family: Arial, sans-serif; padding: 20px;">
-//                 <h2 style="color: #ffffff; border-bottom: 2px solid #555555; padding-bottom: 10px;">New Class Booking</h2>
-//                 <p style="color: #cccccc;">Greetings,</p>
-//                 <p style="color: #cccccc;">A new booking has been made by <strong>${username}</strong> for the class <strong>${className}</strong> at <strong>
-//                 <ul style="color: #cccccc;">
-//                 ${`<li>${sched}</li>`}
-//                 </ul></strong>.</p>
-//                 <p style="color: #cccccc;">Customer Email: <strong>${customerEmail}</strong></p>
-//                 <p style="color: #cccccc;">Customer Phone: <strong>${customerPhoneNumber}</strong></p>
-//                 <p style="color: #cccccc;">Thank you for using our service!</p>
-//                 <div style="margin-top: 20px; border-top: 2px solid #555555; padding-top: 10px; color: #888888;">
-//                   <p style="margin: 0;">Best regards,</p>
-//                   <p style="margin: 0;">E8 GYM</p>
-//                 </div>
-//               </div>
-//             `
-//           };
-
-//           transporter.sendMail(mailOptions, (error, info) => {
-//             if (error) {
-//               console.log("Error sending email: ", error);
-//             } else {
-//               console.log("Email sent: " + info.response);
-//             }
-//           });
-
-//           return res.status(200).json({ "message": "Booked Class Successfully" });
-//         } else {
-//           return res.status(500).json({ "message": "Error Occured While Adding Classes" });
-//         }
-//       } else {
-//         return res.status(500).json({ "message": "Error Occured While Adding Classes" });
-//       }
-//     } else {
-//       return res.status(500).json({ "message": "Error Occured While Adding Classes" });
-//     }
-//   } catch (error) {
-//     console.log("We Have Error 2");
-//     console.log(error);
-//     return res.status(500).json({ "message": "Error Occured While Adding Classes" });
-//   }
-// });
-
-
-//we are using this one
-// app.post('/ClassBooking', async (req, res) => {
-//   const { username, email, className, time, userid, clsId, branch } = req.body;
-
-//   // Connect to MongoDB
-//   const db = await connectToDatabase();
-//   if (!db) {
-//     return res.status(500).json({
-//       error: "Internal Server Error: Unable to connect to the database",
-//     });
-//   }
-
-//   // Log the received booking information
-//   console.log("Received Booking Information:", {
-//     username,
-//     email,
-//     className,
-//     time,
-//     userid,
-//     clsId,
-//     branch,
-//   });
-
-//   // Search the admins collection for the branch and get all the emails
-//   const collectionAdmins = db.collection('admins');
-//   const admins = await collectionAdmins.find({ branch: branch }).toArray();
-//   if (!admins || admins.length === 0) {
-//     return res.status(500).json({ error: "Internal Server Error: Branch not found in admins" });
-//   }
-//   const adminEmails = admins.map(admin => admin.email);
-
-//   // Retrieve customer's email and phone number from the Users collection
-//   const collectionUsers = db.collection('Users');
-//   const user = await collectionUsers.findOne({ '_id': new ObjectId(userid) });
-//   if (!user) {
-//     return res.status(500).json({ error: "Internal Server Error: User not found" });
-//   }
-//   const customerEmail = user.email;
-//   const customerPhoneNumber = user.phoneNumber;
-
-//   // In order to add client to a class we need to update three collections
-//   const collectionClassBooking = db.collection('ClassBooking');
-//   try {
-//     const existingBooking = await collectionClassBooking.findOne({ 'userId': userid, 'clsId': clsId, 'classTime': time });
-//     if (existingBooking == null) {
-//       // Check if ClassSchedule availability is not Locked
-//       console.log("Not Null Finding Availability");
-//       const collectionClassSchedule = db.collection('ClassShcedule');
-//       const classSchedule = await collectionClassSchedule.findOne({ '_id': new ObjectId(clsId), 'availability': 'Available' });
-//       console.log("Availability result ");
-//       console.log(classSchedule);
-//       if (classSchedule !== null && classSchedule.participants < classSchedule.capacity) {
-//         // Add user to ClassBooking
-//         const bookingResult = await collectionClassBooking.insertOne({
-//           username: username,
-//           email: email,
-//           className: className,
-//           classTime: time,
-//           userId: userid,
-//           clsId: clsId,
-//           branch: branch,
-//         });
-//         console.log("We Have Insertion result ", bookingResult);
-//         if (bookingResult && bookingResult.hasOwnProperty('insertedId')) {
-//           // Update ClassSchedule participants += 1
-//           const updateResult = await collectionClassSchedule.updateOne(
-//             { _id: new ObjectId(clsId) },
-//             { $inc: { participants: 1 } } // Increment the number of participants by 1
-//           );
-//           console.log("We Have Update result");
-//           console.log(updateResult);
-//           const formatTime = (date) => {
-//             return new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-//           };
-//           let sched = formatTime(classSchedule.the_date[0]);
-//           // Send email to all admins of the branch, the customer, and the super admin
-//           //${classSchedule.the_date.map(date => `<li>${formatTime(date)}</li>`).join('')}
-//           const mailOptions = {
-//             from: 'youremail@gmail.com',
-//             to: [...adminEmails, customerEmail, 'joe843189@gmail.com'].join(','),
-//             subject: 'New Class Booking',
-//             html: `
-//               <div style="background-color: #1a1a1a; color: #f1f1f1; font-family: Arial, sans-serif; padding: 20px;">
-//                 <h2 style="color: #ffffff; border-bottom: 2px solid #555555; padding-bottom: 10px;">New Class Booking</h2>
-//                 <p style="color: #cccccc;">Greetings,</p>
-//                 <p style="color: #cccccc;">A new booking has been made by <strong>${username}</strong> for the class <strong>${className}</strong> at <strong>
-//                 <ul style="color: #cccccc;">
-//                 ${`<li>${sched}</li>`}
-//                 </ul></strong>.</p>
-//                 <p style="color: #cccccc;">Customer Email: <strong>${customerEmail}</strong></p>
-//                 <p style="color: #cccccc;">Customer Phone: <strong>${customerPhoneNumber}</strong></p>
-//                 <p style="color: #cccccc;">Thank you for using our service!</p>
-//                 <div style="margin-top: 20px; border-top: 2px solid #555555; padding-top: 10px; color: #888888;">
-//                   <p style="margin: 0;">Best regards,</p>
-//                   <p style="margin: 0;">E8 GYM</p>
-//                 </div>
-//               </div>
-//             `
-//           };
-
-//           transporter.sendMail(mailOptions, (error, info) => {
-//             if (error) {
-//               console.log("Error sending email: ", error);
-//             } else {
-//               console.log("Email sent: " + info.response);
-//             }
-//           });
-
-//           return res.status(200).json({ "message": "Booked Class Successfully" });
-//         } else {
-//           return res.status(500).json({ "message": "Error Occurred While Adding Classes" });
-//         }
-//       } else {
-//         return res.status(500).json({ "message": "Error Occurred While Adding Classes" });
-//       }
-//     } else {
-//       return res.status(500).json({ "message": "Already Booked for this Class at the Selected Time" });
-//     }
-//   } catch (error) {
-//     console.log("We Have Error 2");
-//     console.log(error);
-//     return res.status(500).json({ "message": "Error Occurred While Adding Classes" });
-//   }
-// });
-
-// app.post('/ClassBooking', async (req, res) => {
-//   const { username, email, className, time, userid, clsId, branch } = req.body;
-
-//   // Connect to MongoDB
-//   const db = await connectToDatabase();
-//   if (!db) {
-//     return res.status(500).json({
-//       error: "Internal Server Error: Unable to connect to the database",
-//     });
-//   }
-
-//   // Log the received booking information
-//   console.log("Received Booking Information:", {
-//     username,
-//     email,
-//     className,
-//     time,
-//     userid,
-//     clsId,
-//     branch,
-//   });
-
-//   try {
-//     // Fetch branch admin emails
-//     const collectionAdmins = db.collection('admins');
-//     const admins = await collectionAdmins.find({ branch: branch }).toArray();
-//     if (!admins || admins.length === 0) {
-//       return res.status(500).json({ error: "Internal Server Error: Branch not found in admins" });
-//     }
-//     const adminEmails = admins.map(admin => admin.email);
-
-//     // Fetch superadmin email
-//     const collectionSuperadmin = db.collection('superadmin');
-//     const superadmin = await collectionSuperadmin.findOne({});
-//     if (!superadmin || !superadmin.email) {
-//       return res.status(500).json({ error: "Internal Server Error: Superadmin email not found" });
-//     }
-//     const superadminEmail = superadmin.email;
-
-//     // Fetch user details
-//     const collectionUsers = db.collection('Users');
-//     const user = await collectionUsers.findOne({ '_id': new ObjectId(userid) });
-//     if (!user) {
-//       return res.status(500).json({ error: "Internal Server Error: User not found" });
-//     }
-//     const customerEmail = user.email;
-//     const customerPhoneNumber = user.phoneNumber;
-
-//     // Handle booking logic
-//     const collectionClassBooking = db.collection('ClassBooking');
-//     const existingBooking = await collectionClassBooking.findOne({
-//       'userId': userid,
-//       'clsId': clsId,
-//       'classTime': time,
-//     });
-//     if (!existingBooking) {
-//       const collectionClassSchedule = db.collection('ClassShcedule');
-//       const classSchedule = await collectionClassSchedule.findOne({
-//         '_id': new ObjectId(clsId),
-//         'availability': 'Available',
-//       });
-//       if (classSchedule && classSchedule.participants < classSchedule.capacity) {
-//         const bookingResult = await collectionClassBooking.insertOne({
-//           username,
-//           email,
-//           className,
-//           classTime: time,
-//           userId: userid,
-//           clsId: clsId,
-//           branch,
-//         });
-
-//         if (bookingResult && bookingResult.insertedId) {
-//           await collectionClassSchedule.updateOne(
-//             { _id: new ObjectId(clsId) },
-//             { $inc: { participants: 1 } }
-//           );
-
-//           const sched = new Date(classSchedule.the_date[0]).toLocaleTimeString('en-US', {
-//             hour: '2-digit',
-//             minute: '2-digit',
-//             hour12: true,
-//           });
-
-//           // Send email
-//           const mailOptions = {
-//             from: 'youremail@gmail.com',
-//             to: [...adminEmails, customerEmail, superadminEmail].join(','),
-//             subject: 'New Class Booking',
-//             html: `
-//               <div style="background-color: #1a1a1a; color: #f1f1f1; font-family: Arial, sans-serif; padding: 20px;">
-//                 <h2 style="color: #ffffff; border-bottom: 2px solid #555555; padding-bottom: 10px;">New Class Booking</h2>
-//                 <p style="color: #cccccc;">Greetings,</p>
-//                 <p style="color: #cccccc;">A new booking has been made by <strong>${username}</strong> for the class <strong>${className}</strong> at <strong>${sched}</strong>.</p>
-//                 <p style="color: #cccccc;">Customer Email: <strong>${customerEmail}</strong></p>
-//                 <p style="color: #cccccc;">Customer Phone: <strong>${customerPhoneNumber}</strong></p>
-//                 <p style="color: #cccccc;">Thank you for using our service!</p>
-//                 <div style="margin-top: 20px; border-top: 2px solid #555555; padding-top: 10px; color: #888888;">
-//                   <p style="margin: 0;">Best regards,</p>
-//                   <p style="margin: 0;">E8 GYM</p>
-//                 </div>
-//               </div>
-//             `,
-//           };
-
-//           transporter.sendMail(mailOptions, (error, info) => {
-//             if (error) {
-//               console.log("Error sending email: ", error);
-//             } else {
-//               console.log("Email sent: " + info.response);
-//             }
-//           });
-
-//           return res.status(200).json({ "message": "Booked Class Successfully" });
-//         }
-//       }
-//     }
-//     return res.status(500).json({ "message": "Already Booked or Class Full" });
-//   } catch (error) {
-//     console.error("Error:", error);
-//     return res.status(500).json({ "message": "Internal Server Error" });
-//   }
-// });
-
-//This one we are using
-// app.post('/ClassBooking', async (req, res) => {
-//   const { username, email, className, time, userid, clsId, branch } = req.body;
-
-//   // Connect to MongoDB
-//   const db = await connectToDatabase();
-//   if (!db) {
-//     return res.status(500).json({
-//       error: "Internal Server Error: Unable to connect to the database",
-//     });
-//   }
-
-//   // Log the received booking information
-//   console.log("Received Booking Information:", {
-//     username,
-//     email,
-//     className,
-//     time,
-//     userid,
-//     clsId,
-//     branch,
-//   });
-
-//   try {
-//     // Fetch branch admin emails
-//     const collectionAdmins = db.collection('admins');
-//     const admins = await collectionAdmins.find({ branch: branch }).toArray();
-//     if (!admins || admins.length === 0) {
-//       return res.status(500).json({ error: "Internal Server Error: Branch not found in admins" });
-//     }
-//     const adminEmails = admins.map(admin => admin.email);
-
-//     // Fetch superadmin email
-//     const collectionSuperadmin = db.collection('superadmin');
-//     const superadmin = await collectionSuperadmin.findOne({});
-//     if (!superadmin || !superadmin.email) {
-//       return res.status(500).json({ error: "Internal Server Error: Superadmin email not found" });
-//     }
-//     const superadminEmail = superadmin.email;
-
-//     // Fetch user details
-//     const collectionUsers = db.collection('Users');
-//     const user = await collectionUsers.findOne({ '_id': new ObjectId(userid) });
-//     if (!user) {
-//       return res.status(500).json({ error: "Internal Server Error: User not found" });
-//     }
-//     const customerEmail = user.email;
-//     const customerPhoneNumber = user.phoneNumber;
-
-//     // Handle booking logic
-//     const collectionClassBooking = db.collection('ClassBooking');
-//     const existingBooking = await collectionClassBooking.findOne({
-//       'userId': userid,
-//       'clsId': clsId,
-//       'classTime': time,
-//     });
-//     if (!existingBooking) {
-//       const collectionClassSchedule = db.collection('ClassShcedule');
-//       const classSchedule = await collectionClassSchedule.findOne({
-//         '_id': new ObjectId(clsId),
-//         'availability': 'Available',
-//       });
-//       if (classSchedule && classSchedule.participants < classSchedule.capacity) {
-//         const bookingResult = await collectionClassBooking.insertOne({
-//           username,
-//           email,
-//           className,
-//           classTime: time,
-//           userId: userid,
-//           clsId: clsId,
-//           branch,
-//         });
-
-//         if (bookingResult && bookingResult.insertedId) {
-//           await collectionClassSchedule.updateOne(
-//             { _id: new ObjectId(clsId) },
-//             { $inc: { participants: 1 } }
-//           );
-
-//           // Format the picked time
-//           const formattedTime = new Date(time).toLocaleTimeString('en-US', {
-//             hour: '2-digit',
-//             minute: '2-digit',
-//             hour12: true,
-//           });
-
-//           // Email options
-//           const mailOptions = {
-//             from: 'youremail@gmail.com',
-//             to: [...adminEmails, customerEmail, superadminEmail].join(','),
-//             subject: 'New Class Booking',
-//             html: `
-//     <div style="background-color: #1a1a1a; color: #f1f1f1; font-family: Arial, sans-serif; padding: 20px;">
-//       <h2 style="color: #ffffff; border-bottom: 2px solid #555555; padding-bottom: 10px;">New Class Booking</h2>
-//       <p style="color: #cccccc;">Greetings,</p>
-//       <p style="color: #cccccc;">A new booking has been made by <strong>${username}</strong> for the class <strong>${className}</strong> at <strong>${formattedTime}</strong>.</p>
-//       <p style="color: #cccccc;">Customer Email: <strong>${customerEmail}</strong></p>
-//       <p style="color: #cccccc;">Customer Phone: <strong>${customerPhoneNumber}</strong></p>
-//       <p style="color: #cccccc;">Thank you for using our service!</p>
-//       <div style="margin-top: 20px; border-top: 2px solid #555555; padding-top: 10px; color: #888888;">
-//         <p style="margin: 0;">Best regards,</p>
-//         <p style="margin: 0;">E8 GYM</p>
-//       </div>
-//     </div>
-//   `,
-//           };
-
-
-//           transporter.sendMail(mailOptions, (error, info) => {
-//             if (error) {
-//               console.log("Error sending email: ", error);
-//             } else {
-//               console.log("Email sent: " + info.response);
-//             }
-//           });
-
-//           return res.status(200).json({ "message": "Booked Class Successfully" });
-//         }
-//       }
-//     }
-//     return res.status(500).json({ "message": "Already Booked or Class Full" });
-//   } catch (error) {
-//     console.error("Error:", error);
-//     return res.status(500).json({ "message": "Internal Server Error" });
-//   }
-// });
 
 
 
 app.post('/ClassBooking', async (req, res) => {
   const { username, email, className, time, userid, clsId, branch } = req.body;
 
-  // Connect to MongoDB
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({
-      error: "Internal Server Error: Unable to connect to the database",
-    });
-  }
-
-  // Log the received booking information
-  console.log("Received Booking Information:", {
-    username,
-    email,
-    className,
-    time,
-    userid,
-    clsId,
-    branch,
-  });
+  // Create a new connection for this route
+  const client = new MongoClient(uri);
 
   try {
+    // Connect to MongoDB for this specific request
+    await client.connect();
+    const db = client.db();
+
+    // Log the received booking information
+    console.log("Received Booking Information:", {
+      username,
+      email,
+      className,
+      time,
+      userid,
+      clsId,
+      branch,
+    });
+
     // Convert the received time to Asia/Beirut timezone
     const beirutTime = moment.tz(time, "Asia/Beirut").format();  // Format it to ISO 8601 string
 
@@ -1456,7 +962,8 @@ app.post('/ClassBooking', async (req, res) => {
 
           // Format the picked time
           const formattedTime = moment.tz(time, "Asia/Beirut").format('hh:mm A');
-          console.log(`firnatted Time ${formattedTime}`)
+          console.log(`Formatted Time: ${formattedTime}`);
+
           // Email options
           const mailOptions = {
             from: 'youremail@gmail.com',
@@ -1476,7 +983,6 @@ app.post('/ClassBooking', async (req, res) => {
                 <p style="font-size: 16px; line-height: 1.5; text-align: left; margin: 0 auto; max-width: 400px;">
                   <strong>What:</strong> ${className}<br />
                   <strong>When:</strong> ${formattedTime}<br />
-            
                 </p>
                 <p style="font-size: 16px; line-height: 1.5; margin-top: 20px; color: #333333;">
                   If you need any assistance with your booking, please email us at 
@@ -1485,7 +991,6 @@ app.post('/ClassBooking', async (req, res) => {
               </div>
             `,
           };
-          
 
           transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
@@ -1503,6 +1008,14 @@ app.post('/ClassBooking', async (req, res) => {
   } catch (error) {
     console.error("Error:", error);
     return res.status(500).json({ "message": "Internal Server Error" });
+  } finally {
+    try {
+      // Ensure connection is closed after the DB operation
+      await client.close();
+      console.log('ClassBooking connection closed');
+    } catch (closeError) {
+      console.error('Error closing MongoDB connection:', closeError);
+    }
   }
 });
 
@@ -1510,8 +1023,15 @@ app.post('/ClassBooking', async (req, res) => {
 app.post('/ClassBooking', async (req, res) => {
   const { username, email, className, time, userid, clsId, branch } = req.body;
 
-  // Connect to MongoDB
-  const db = await connectToDatabase();
+  const client = new MongoClient(uri);
+
+  try {
+    // Connect to MongoDB
+    await client.connect();
+    console.log("Database connected");
+    const db = client.db();
+
+  // Connect to db
   if (!db) {
     return res.status(500).json({
       error: "Internal Server Error: Unable to connect to the database",
@@ -1635,9 +1155,14 @@ app.post('/ClassBooking', async (req, res) => {
       }
     }
     return res.status(500).json({ "message": "Already Booked or Class Full" });
-  } catch (error) {
-    console.error("Error:", error);
-    return res.status(500).json({ "message": "Internal Server Error" });
+    } catch (error) {
+      console.error("Error:", error);
+      return res.status(500).json({ "message": "Internal Server Error" });
+    }
+  } finally {
+    // Close the database connection
+    await client.close();
+    console.log("Class booking 2!!!!!!!! connection closed");
   }
 });
 
@@ -1650,73 +1175,61 @@ app.post('/ClassBooking', async (req, res) => {
 app.post('/CancelBooking', async (req, res) => {
   const { className, bookingId, branch } = req.body;
 
-  // can you listen to my vn?
   // Ensure all required fields are provided
-  // where do you define those fields ?
   if (className == undefined) {
     return res.status(400).json({ error: 'Booking ID and class name are required for cancellation' });
   }
-  //if (!bookingId || !className) {
-
-  //}
 
   // Log the received cancellation information
   console.log('Received Cancellation Information:', { className, bookingId, branch });
 
-  // Connect to MongoDB
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-  }
+  let client;
 
-  // Update the number of participants in the class
-  //console.log((await db.collections())[0].toString())
-  const collection = db.collection(branch + 'Classes');
   try {
-    //const finder=await collection.insertOne({'test':'tested'});
-    console.log("FIneder", db.databaseName)
-    //console.log(await finder.toArray());
+    // Create a new MongoDB client connection
+    client = new MongoClient(uri);
+    await client.connect();
+    const db = client.db();
+
+    // Connect to the desired collection
+  const collection = db.collection(branch + 'Classes');
+    
+    // Update the number of participants in the class
     const result = await collection.updateOne(
       { 'name': className },
       { $inc: { 'participants': -1 } }
     );
-    console.log("Modified Result")
-    console.log(result)
     if (result.modifiedCount === 1) {
       console.log('Number of participants updated for class:', className);
     } else {
       console.error('Failed to update number of participants for class:', className);
     }
-  } catch (error) {
-    console.error('Error updating number of participants for class:', error);
-  }
 
-  // Remove the booking information from the MongoDB collection
+    // Remove the booking information from the MongoDB collection
   const bookingCollection = db.collection('ClassBooking');
-  try {
-    console.log(`Attempting to remove booking with ID: ${bookingId}`);
-    if (!bookingId) {
-      console.error('Error: Booking ID is empty or undefined');
-      return res.status(400).json({ error: 'Booking ID is empty or undefined' });
-    }
-
     const objectId = new ObjectId(bookingId);
-    console.log('Parsed ObjectId:', objectId);
+  const deleteResult = await bookingCollection.deleteOne({ _id: objectId });
 
-    const result = await bookingCollection.deleteOne({ _id: objectId });
-
-    console.log(result)
-    if (result.deletedCount === 1) {
-      console.log('Booking information removed from MongoDB:', result.deletedCount);
-      // Send success response back to the client
+  if (deleteResult.deletedCount === 1) {
+    console.log('Booking information removed from MongoDB');
       return res.status(200).json({ message: 'Booking canceled successfully' });
     } else {
       console.error('Failed to remove booking information');
       return res.status(404).json({ error: 'Booking not found' });
     }
   } catch (error) {
-    console.error('Error removing booking information:', error);
-    return res.status(500).json({ error: 'Error removing booking information' });
+    console.error('Error during cancellation process:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    // Ensure connection is closed after the operation is complete
+    if (client) {
+      try {
+        await client.close();
+        console.log('CancelBooking connection closed');
+      } catch (closeError) {
+        console.error('Error closing MongoDB connection:', closeError);
+      }
+    }
   }
 });
 
@@ -1725,10 +1238,10 @@ app.post('/CancelBooking', async (req, res) => {
 
 
 
-
+//noDB
 app.get('/AccountScreen', async (req, res) => {
   const insertedId = req.query.insertedId;
-  console.log("hello");
+  console.log("hello account screen!");
   console.log(insertedId);
 
   if (!insertedId) {
@@ -1747,41 +1260,40 @@ app.get('/AccountScreen', async (req, res) => {
 app.post('/updateUserRank', async (req, res) => {
   const { userId, newRank } = req.body;
 
-  // Connect to MongoDB
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-  }
+  const client = new MongoClient(uri);
+  try {
+    // Connect to MongoDB
+    await client.connect();
+    console.log("updateUserRank connected to db");
+    const db = client.db(); // Replace with your actual database name
 
-  // Update the user's rank in the Users collection
+    // Update the user's rank in the Users collection
   const collection = db.collection('Users');
   try {
     const result = await collection.updateOne(
       { '_id': new ObjectId(userId) },
       { $set: { 'rank': newRank } }
-    );
+     );
 
     if (result.modifiedCount === 1) {
       res.status(200).json({ message: 'User rank updated successfully' });
     } else {
       res.status(404).json({ error: 'User not found' });
+     }
+   } catch (error) {
+      console.error('Error updating user rank:', error);
+      res.status(500).json({ error: 'Error updating user rank' });
     }
   } catch (error) {
-    console.error('Error updating user rank:', error);
-    res.status(500).json({ error: 'Error updating user rank' });
+    console.error('Database connection error:', error);
+    res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
+  } finally {
+    // Close the database connection
+    await client.close();
+    console.log("UpdateUserRank connection closed");
   }
 });
 
-{/*// Route for AccountScreen
-app.get('/AccountScreen', async (req, res) => {
-  const data = await fetchData('Users');
-  if (data) {
-    console.log(data)
-   res.json(data);
-  } else {
-   res.status(500).json({ error: 'Internal Server Error' });
-  }
-});*/}
 
 
 
@@ -1791,16 +1303,18 @@ app.get('/AccountScreen', async (req, res) => {
 app.post('/SignInScreen', async (req, res) => {
   const { email, password } = req.body;
   console.log(`got signinscreen ${email} and ${password}`);
-  const db = await connectToDatabase('E8GYMFINAL');
+  
 
-  if (!db) {
-    res.status(500).json({ error: 'Internal Server Error' });
-    return;
-  }
-
-  const collection = db.collection('Users');
+  const client = new MongoClient(uri);
 
   try {
+    await client.connect();
+    console.log("SignInScreen Connected to database");
+    const db = client.db();
+
+   const collection = db.collection('Users');
+
+   try {
     // Check if user with provided email, password, and verified status exists
     // Use $regex to make the email check case-insensitive
     const user = await collection.findOne({ 'email': { $regex: new RegExp(`^${email}$`, 'i') }, 'password': password, 'verified': true });
@@ -1813,233 +1327,262 @@ app.post('/SignInScreen', async (req, res) => {
       res.status(401).json({ error: 'Invalid credentials' });
     }
   } catch (error) {
-    console.error('Error signing in user:', error);
-    res.status(500).json({ error: 'Error signing in user' });
+      console.error('Error signing in user:', error);
+      res.status(500).json({ error: 'Error signing in user' });
+    }
+  } catch (error) {
+    console.error('Database connection error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    await client.close();
+    console.log("Sign in screen connection closed");
   }
 });
 
 
 app.post('/ChangePassword', async (req, res) => {
-  const db = await connectToDatabase('E8GYMFINAL');
-  if (!db) {
-    console.error('Database connection failed');
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-
-  const { email, newPassword, verificationCode } = req.body;
+  const client = new MongoClient(uri);
 
   try {
-    // Find user by email and verification code
-    const verificationCodeNumber = parseInt(verificationCode, 10);
-    const result = await db.collection('Users').findOneAndUpdate(
-      { email: email, verificationKey: verificationCodeNumber }, // Match the email and verification key
-      { $set: { password: newPassword } }, // Update the password
-      { returnOriginal: false } // Return the updated document
-    );
+    await client.connect();
+    console.log('Change password Connected to database');
+    const db = client.db(); 
 
-    console.log('Result of findOneAndUpdate:', result); // Log the result for debugging
+    const { email, newPassword, verificationCode } = req.body;
 
-    if (result.value) {
-      console.log('Password updated successfully:', result.value);
-      return res.status(200).json({ message: 'Password changed successfully' });
-    } else {
-      console.log('Password updated successfully:', result.value);
-      return res.status(200).json({ message: 'Password changed successfully' });
+    try {
+      // Find user by email and verification code
+      const verificationCodeNumber = parseInt(verificationCode, 10);
+      const result = await db.collection('Users').findOneAndUpdate(
+        { email: email, verificationKey: verificationCodeNumber }, // Match the email and verification key
+        { $set: { password: newPassword } }, // Update the password
+        { returnOriginal: false } // Return the updated document
+      );
+  
+      console.log('Result of findOneAndUpdate:', result); // Log the result for debugging
+  
+      if (result.value) {
+        console.log('Password updated successfully:', result.value);
+        return res.status(200).json({ message: 'Password changed successfully' });
+      } else {
+        console.log('Password updated successfully:', result.value);
+        return res.status(200).json({ message: 'Password changed successfully' });
+      }
+    }catch (error) {
+      console.error('Error changing password:', error);
+      return res.status(500).json({ error: 'Error changing password' });
     }
   } catch (error) {
-    console.error('Error changing password:', error);
-    return res.status(500).json({ error: 'Error changing password' });
+    console.error('Database connection error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    await client.close();
+    console.log('Change Password connection closed');
   }
 });
-
-
-
-
-
-
-
 
 
 
 // Route for SignUpScreen
 
 app.post('/SignUpScreen', async (req, res) => {
-  const db = await connectToDatabase('E8GYMFINAL');
-  if (!db) {
-    console.log(req.body);
-    res.status(500).json({ error: 'Internal Server Error' });
-    return;
-  }
+  const uri = 'your-database-uri-here'; // Replace with your MongoDB URI
+  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-  const collection = db.collection('Users');
-  console.log(req.body);
   try {
-    // Generate a 6-digit verification key
-    const verificationKey = Math.floor(100000 + Math.random() * 900000);
+    await client.connect();
+    console.log('SignUpScreen Connected to database');
+    const db = client.db(); 
 
-    // Create a new document with the verification key
-    const document = { ...req.body, verificationKey };
+    console.log(req.body);
+    const collection = db.collection('Users');
 
-    // Insert the document into the collection
-    const result = await collection.insertOne(document);
-    console.log('User signed up:', result);
+    try {
+ // Generate a 6-digit verification key
+ const verificationKey = Math.floor(100000 + Math.random() * 900000);
 
-    // Send verification key to user's email
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: 'dollarrami75@gmail.com',
-        pass: 'tdco ogya momt kdee'
-      }
-    });
+ // Create a new document with the verification key
+ const document = { ...req.body, verificationKey };
 
-    await transporter.sendMail({
-      from: 'your_email@example.com',
-      to: req.body.email,
-      subject: 'Welcome to E8GYM - Verification Code',
-      html: `
-        <html>
-          <head>
-            <style>
-              body {
-                font-family: 'Arial', sans-serif;
-                background-color: #000;
-                color: #fff;
-                margin: 0;
-                padding: 0;
-              }
-              .container {
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 20px;
-                background-color: #000;
-                color: #fff;
-                text-align: center;
-              }
-              h1 {
-                color: #fff;
-                font-size: 24px;
-                margin-bottom: 20px;
-              }
-              p {
-                color: #fff;
-                font-size: 16px;
-                line-height: 1.6;
-                margin-bottom: 20px;
-              }
-              strong {
-                color: #fff;
-                font-weight: bold;
-              }
-              .footer {
-                margin-top: 20px;
-                color: #fff;
-                font-size: 14px;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <h1>Welcome to E8GYM!</h1>
-              <p>Your verification code is: <strong>${verificationKey}</strong></p>
-              <p>Thank you for joining E8GYM. We look forward to helping you achieve your fitness goals.</p>
-              <p>If you have any questions or need assistance, please feel free to contact us.</p>
-              
-            </div>
-          </body>
-        </html>
-      `,
-    });
+ // Insert the document into the collection
+ const result = await collection.insertOne(document);
+ console.log('User signed up:', result);
 
-    res.status(201).json({ message: 'User signed up successfully', user: result });
+      // Send verification key to user's email
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'dollarrami75@gmail.com',
+          pass: 'tdco ogya momt kdee'
+        }
+      });
+
+      await transporter.sendMail({
+        from: 'your_email@example.com',
+        to: req.body.email,
+        subject: 'Welcome to E8GYM - Verification Code',
+        html: `
+          <html>
+            <head>
+              <style>
+                body {
+                  font-family: 'Arial', sans-serif;
+                  background-color: #000;
+                  color: #fff;
+                  margin: 0;
+                  padding: 0;
+                }
+                .container {
+                  max-width: 600px;
+                  margin: 0 auto;
+                  padding: 20px;
+                  background-color: #000;
+                  color: #fff;
+                  text-align: center;
+                }
+                h1 {
+                  color: #fff;
+                  font-size: 24px;
+                  margin-bottom: 20px;
+                }
+                p {
+                  color: #fff;
+                  font-size: 16px;
+                  line-height: 1.6;
+                  margin-bottom: 20px;
+                }
+                strong {
+                  color: #fff;
+                  font-weight: bold;
+                }
+                .footer {
+                  margin-top: 20px;
+                  color: #fff;
+                  font-size: 14px;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h1>Welcome to E8GYM!</h1>
+                <p>Your verification code is: <strong>${verificationKey}</strong></p>
+                <p>Thank you for joining E8GYM. We look forward to helping you achieve your fitness goals.</p>
+                <p>If you have any questions or need assistance, please feel free to contact us.</p>
+                
+              </div>
+            </body>
+          </html>
+        `,
+      });
+
+      res.status(201).json({ message: 'User signed up successfully', user: result });
+    } catch (error) {
+      console.error('Error signing up user:', error);
+      res.status(500).json({ error: 'Error signing up user' });
+    }
   } catch (error) {
-    console.error('Error signing up user:', error);
-    res.status(500).json({ error: 'Error signing up user' });
+    console.error('Database connection error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    await client.close();
+    console.log('SignUpScreen Database connection closed');
   }
 });
 // verify 32eydj
 
 app.post('/VerifyUser', async (req, res) => {
-  const db = await connectToDatabase('E8GYMFINAL');
-  if (!db) {
-    res.status(500).json({ error: 'Internal Server Error' });
-    return;
-  }
+  const client = new MongoClient(uri);
 
-  const collection = db.collection('Users');
   try {
-    // Find the user by _id
-    const user = await collection.findOne({ _id: new ObjectId(req.body._id) });
+    await client.connect();
+    console.log('VeryfyUser Connected to database');
+    const db = client.db(); 
 
-    // Check if user exists and verificationKey matches
-    if (user && user.verificationKey === parseInt(req.body.verificationKey)) {
-      // Update the user's 'verified' field to true
-      await collection.updateOne({ _id: user._id }, { $set: { verified: true } });
+    const collection = db.collection('Users');
+    try {
+      // Find the user by _id
+      const user = await collection.findOne({ _id: new ObjectId(req.body._id) });
+  
+      // Check if user exists and verificationKey matches
+      if (user && user.verificationKey === parseInt(req.body.verificationKey)) {
+        // Update the user's 'verified' field to true
+        await collection.updateOne({ _id: user._id }, { $set: { verified: true } });
 
-      res.status(200).json({ message: 'User verified successfully' });
-    } else {
-      res.status(404).json({ error: 'User not found or verification key does not match' });
+        res.status(200).json({ message: 'User verified successfully' });
+      } else {
+        res.status(404).json({ error: 'User not found or verification key does not match' });
+      }
+    } catch (error) {
+      console.error('Error verifying user:', error);
+      res.status(500).json({ error: 'Error verifying user' });
     }
   } catch (error) {
-    console.error('Error verifying user:', error);
-    res.status(500).json({ error: 'Error verifying user' });
+    console.error('VeryfyUser Database connection error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    await client.close();
+    console.log('VeryfyUser Database connection closed');
   }
 });
-
-
-
-
 
 
 
 
 // Route for ContactUs
 app.post('/ContactUs', async (req, res) => {
-  const db = await connectToDatabase('E8GYMFINAL');
+  const client = new MongoClient(uri);
 
-  if (!db) {
-    console.log(req.body)
-    res.status(500).json({ error: 'Internal Server Error' });
-    return;
-  }
-
-  const collection = db.collection('ContactUs');
-  console.log(req.body)
   try {
-    // Create a new document with an explicit _id field
-    const document = req.body;
-    console.log(document)
-    // Insert the document into the collection
-    const result = await collection.insertOne(document);
-    console.log('User contact us:', result);
-    res.status(201).json({ message: 'User contact us successfully', user: result });
-  }
-  catch (error) {
-    console.error('Error contacting us :', error);
-    res.status(500).json({ error: 'Error contacting us' });
+    await client.connect();
+    console.log('ContactUs Connected to database');
+    const db = client.db(); 
+
+    const collection = db.collection('ContactUs');
+    console.log(req.body)
+    try {
+      // Create a new document with an explicit _id field
+      const document = req.body;
+      console.log(document)
+      // Insert the document into the collection
+      const result = await collection.insertOne(document);
+      console.log('User contact us:', result);
+      res.status(201).json({ message: 'User contact us successfully', user: result });
+    }
+    catch (error) {
+      console.error('Error contacting us :', error);
+      res.status(500).json({ error: 'Error contacting us' });
+    }
+  } catch (error) {
+    console.error('Database connection error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    await client.close();
+    console.log('ContactUs Database connection closed');
   }
 });
+
 // ttttttttttt newwwwwwwwwwwwwwwwwwwww
 app.get('/ContactUs', async (req, res) => {
-  const db = await connectToDatabase('E8GYMFINAL');
-
-  if (!db) {
-    res.status(500).json({ error: 'Internal Server Error' });
-    return;
-  }
-
-  const collection = db.collection('ContactUs');
+  const client = new MongoClient(uri);
 
   try {
+    await client.connect();
+    const db = client.db();
+    const collection = db.collection('ContactUs');
+
     // Retrieve all documents from the collection
     const documents = await collection.find().toArray();
     res.status(200).json({ contacts: documents });
   } catch (error) {
     console.error('Error retrieving contacts:', error);
     res.status(500).json({ error: 'Error retrieving contacts' });
+  } finally {
+    await client.close();
+    console.log('Get Contact US Connection to MongoDB closed');
   }
 });
 
+//noDB
 app.get('/Branch1SpecificScreen', async (req, res) => {
   try {
     const data = await fetchData('adminbranches', { branchID: '1' }); // Filter for branchID 1
@@ -2055,7 +1598,7 @@ app.get('/Branch1SpecificScreen', async (req, res) => {
   }
 });
 
-
+//noDB
 app.get('/Branch2SpecificScreen', async (req, res) => {
   try {
     const data = await fetchData('adminbranches', { branchID: '2' }); // Filter for branchID 2
@@ -2071,6 +1614,7 @@ app.get('/Branch2SpecificScreen', async (req, res) => {
   }
 });
 
+//noDB
 app.get('/Branch3SpecificScreen', async (req, res) => {
   try {
     const data = await fetchData('adminbranches', { branchID: '3' }); // Filter for branchID 3
@@ -2085,14 +1629,15 @@ app.get('/Branch3SpecificScreen', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
-// // Function to fetch admin data from MongoDB based on email
+
+// Function to fetch admin data from MongoDB based on email
 async function getAdminByEmail(email) {
   const client = new MongoClient(uri);
   console.log(email);
   try {
     await client.connect();
     console.log(client.status);
-    const database = client.db('E8GYMFINAL');
+    const database = client.db();
     const collection = database.collection('admins');
 
     // Perform case-insensitive email check
@@ -2104,9 +1649,11 @@ async function getAdminByEmail(email) {
     return null;
   } finally {
     await client.close();
+    console.log("getAdminByEmail connection closed");
   }
 }
 
+//noDB
 app.get('/AdminLoginScreen', async (req, res) => {
   const { email, password } = req.query;
   console.log(email, password);
@@ -2131,12 +1678,11 @@ app.get('/AdminLoginScreen', async (req, res) => {
 
 // Route handler for updating branch details
 app.put('/updateBranchDetails', async (req, res) => {
-  try {
-    const db = await connectToDatabase();
-    if (!db) {
-      return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-    }
+  const client = new MongoClient(uri);
 
+  try {
+    await client.connect();
+    const db = client.db();
     const collection = db.collection('adminbranches');
     const { branchID, name, location, users, profit, phoneNumber } = req.body;
 
@@ -2168,8 +1714,12 @@ app.put('/updateBranchDetails', async (req, res) => {
   } catch (error) {
     console.error('Error updating branch details:', error);
     res.status(500).json({ error: 'Error updating branch details' });
+  } finally {
+    await client.close();
+    console.log('updateBranchDetails Connection to MongoDB closed');
   }
 });
+
 
 async function getsuperAdminByEmail(email) {
   const client = new MongoClient(uri);
@@ -2186,6 +1736,7 @@ async function getsuperAdminByEmail(email) {
     return null;
   } finally {
     await client.close();
+    console.log("getsuperAdminByEmail connection closed");
   }
 }
 
@@ -2213,34 +1764,36 @@ app.post('/ClassBooking', async (req, res) => {
   const { username, email, className, time } = req.body;
 
   // Log the received booking information
-  console.log('Received Booking Information:', { username, email, className, time, });
+  console.log('Received Booking Information:', { username, email, className, time });
 
   // Connect to MongoDB
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-  }
+  const client = new MongoClient(uri);
 
-  // Insert booking information into MongoDB collection
-  const collection = db.collection('ClassBooking');
   try {
+    await client.connect();
+    const db = client.db();
+    const collection = db.collection('ClassBooking');
+
+    // Insert booking information into MongoDB collection
     const result = await collection.insertOne({
       username: username,
       email: email,
       className: className,
       classTime: time,
-
-
     });
     console.log('Booking information stored in MongoDB:', result.ops);
 
     // Send success response back to the client
-    res.status(201).json({ message: 'Booking  successfully' });
+    res.status(201).json({ message: 'Booking successfully' });
   } catch (error) {
     console.error('Error storing booking information:', error);
     res.status(500).json({ error: 'Error storing booking information' });
+  } finally {
+    await client.close();
+    console.log('ClassBooking Connection to MongoDB closed');
   }
 });
+
 
 
 
@@ -2293,9 +1846,11 @@ app.post('/Checkout', async (req, res) => {
     res.status(500).json({ error: 'Error storing checkout information' });
   } finally {
     await client.close();
+    console.log("Checkout 1 post conenction closed");
   }
 });
 
+//noDB
 app.get('/checkout', async (req, res) => {
   try {
     const data = await fetchData('Checkout');
@@ -2335,15 +1890,18 @@ app.post('/OwnNow', async (req, res) => {
     console.log('Form data to be submitted:', formData); // Log the form data before submission
 
     // Insert form data into MongoDB collection
-    const db = await connectToDatabase();
-    if (!db) {
-      return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-    }
+    const client = new MongoClient(uri);
 
+    await client.connect(); // Connect to MongoDB
+    const db = client.db(); // Use the default database
     const collection = db.collection('OwnNow'); // Use your collection name
     const result = await collection.insertOne(formData);
 
     console.log('Result of form submission:', result); // Log the result of the form submission
+
+    // Close the MongoDB connection
+    await client.close();
+    console.log('OwnNow Database connection closed.');
 
     if (result.insertedId) {
       return res.status(201).json({ message: 'Form submitted successfully' });
@@ -2358,9 +1916,10 @@ app.post('/OwnNow', async (req, res) => {
     return res.status(500).json({ error: 'Failed to submit form. Please try again later.' });
   }
 });
+
 /////////////////////////////////////////////
 
-
+//noDB
 // Route to fetch class details for Qlayaa branch
 app.get('/QlayaaClasses', async (req, res) => {
   try {
@@ -2376,6 +1935,7 @@ app.get('/QlayaaClasses', async (req, res) => {
   }
 });
 
+//noDB
 // Route to fetch class details for Ajaltoun branch
 app.get('/AjaltounClasses', async (req, res) => {
   try {
@@ -2391,6 +1951,7 @@ app.get('/AjaltounClasses', async (req, res) => {
   }
 });
 
+//noDB
 // Route to fetch class details for Hazmieh branch
 app.get('/HazmiehClasses', async (req, res) => {
   try {
@@ -2406,6 +1967,7 @@ app.get('/HazmiehClasses', async (req, res) => {
   }
 });
 
+//noDB
 // Route for ClassScheduleScreen for Qlayaa branch
 app.get('/QlayaaClassScheduleScreen', async (req, res) => {
   try {
@@ -2421,6 +1983,7 @@ app.get('/QlayaaClassScheduleScreen', async (req, res) => {
   }
 });
 
+//noDB
 // Route for ClassScheduleScreen for Ajaltoun branch
 app.get('/AjaltounClassScheduleScreen', async (req, res) => {
   try {
@@ -2436,6 +1999,7 @@ app.get('/AjaltounClassScheduleScreen', async (req, res) => {
   }
 });
 
+//noDB
 // Route for ClassScheduleScreen for Hazmieh branch
 app.get('/HazmiehClassScheduleScreen', async (req, res) => {
   try {
@@ -2456,46 +2020,68 @@ app.get('/classes', async (req, res) => {
   const { branch } = req.query;
 
   // Connect to MongoDB
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-  }
+  const client = new MongoClient(uri);
 
-  // Fetch classes from the specified branch
-  const collectionName = `${branch}Classes`;
-  const collection = db.collection(collectionName);
   try {
+    await client.connect(); // Connect to MongoDB
+    const db = client.db(); // Use the default database
+
+    // Fetch classes from the specified branch
+    const collectionName = `${branch}Classes`;
+    const collection = db.collection(collectionName);
     const classes = await collection.find().toArray();
+    
+    // Close the MongoDB connection
+    await client.close();
+    console.log('/classes Database connection closed.');
+
     return res.status(200).json(classes);
   } catch (error) {
     console.error('Error fetching classes:', error);
     return res.status(500).json({ error: 'Error fetching classes' });
   }
 });
+
+
 app.get('/userClasses', async (req, res) => {
   const { userId } = req.query;
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-  }
-  const collectionName = 'ClassBooking';
-  const collection = db.collection(collectionName);
+  console.log('userClasses called for user:', userId);
+
+  // Connect to MongoDB using URI
+  const client = new MongoClient(uri);
+
   try {
+    await client.connect(); // Connect to MongoDB
+    const db = client.db(); // Use the default database
+
+    const collectionName = 'ClassBooking';
+    const collection = db.collection(collectionName);
+
     const classes = await collection.find({ 'userId': userId }).toArray();
+
+    // Close the MongoDB connection
+    await client.close();
+    console.log('userClasses Database connection closed.');
+
     return res.status(200).json(classes);
   } catch (error) {
-    console.log(`Fetching User ${useId} Classes ${error}`)
+    console.log(`Fetching User ${userId} Classes ${error}`);
     return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
   }
 });
+
+
 app.get('/branches_for_super_admin', async (req, res) => {
-  const db = await connectToDatabase()
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
-  }
-  const collectionName = 'adminbranches';
-  const collection = db.collection(collectionName);
+  // Connect to MongoDB using URI
+  const client = new MongoClient(uri);
+
   try {
+    await client.connect(); // Connect to MongoDB
+    const db = client.db(); // Use the default database
+
+    const collectionName = 'adminbranches';
+    const collection = db.collection(collectionName);
+
     const agg = [
       {
         '$lookup': {
@@ -2514,57 +2100,110 @@ app.get('/branches_for_super_admin', async (req, res) => {
           ]
         }
       }
-    ]
+    ];
     const branches = await collection.aggregate(agg).sort({ 'name': 1 }).toArray();
+
+    // Close the MongoDB connection
+    await client.close();
+    console.log('branches-for-superadmin Database connection closed.');
+
     return res.status(200).json(branches);
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ error: 'Internal Server Error', ecode: error })
+    console.log(error);
+    return res.status(500).json({ error: 'Internal Server Error', ecode: error });
   }
-})
+});
+
+
 app.get('/save_branch_information', async (req, res) => {
-  const db = await connectToDatabase()
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
-  }
-  const { name, location, phone, id } = req.query;
-  const collectionName = 'adminbranches';
-  const collection = db.collection(collectionName);
+  // Connect to MongoDB using URI
+  const client = new MongoClient(uri);
+
   try {
-    const update = await collection.findOneAndUpdate({ '_id': new ObjectId(id) }, { '$set': { 'location': location, 'name': name, 'phoneNumber': phone } })
-    console.log(update)
+    await client.connect(); // Connect to MongoDB
+    const db = client.db(); // Use the default database
+
+    const { name, location, phone, id } = req.query;
+    const collectionName = 'adminbranches';
+    const collection = db.collection(collectionName);
+
+    const update = await collection.findOneAndUpdate({ '_id': new ObjectId(id) }, { '$set': { 'location': location, 'name': name, 'phoneNumber': phone } });
+    console.log(update);
+
+    // Close the MongoDB connection
+    await client.close();
+    console.log('save-branch-information Database connection closed.');
+
     return res.status(200).json({ 'success': 'document ' + id + ' Updated' });
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ error: 'Internal Server Error', ecode: error })
+    console.log(error);
+    return res.status(500).json({ error: 'Internal Server Error', ecode: error });
   }
-})
+});
+
 
 app.get('/save_new_branch_information', async (req, res) => {
-  const db = await connectToDatabase()
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
-  }
-  const { name, location, phone } = req.query;
-  const collectionName = 'adminbranches';
-  const collection = db.collection(collectionName);
+  const client = new MongoClient(uri);
+
   try {
-    const newBranch = await collection.insertOne({
-      'name': name,
-      'location': location,
-      'phoneNumber': phone,
-      'users': [],
-      'profit': 0,
-      'branchID': Date.now().toString()
-    })
-    // const update = await collection.findOneAndUpdate({'_id':new ObjectId(id)},{'$set':{'location':location,'name':name,'phoneNumber':phone}})
-    console.log(newBranch)
-    return res.status(200).json({ 'success': true, 'branch': newBranch });
+    await client.connect();
+    const db = client.db();
+
+    const { name, location, phone } = req.query;
+    const branchesCollection = db.collection('adminbranches');
+    const classScheduleCollection = db.collection('ClassShcedule');
+
+    // Create a new branch with a unique branchID
+    const newBranchID = Date.now().toString();
+    const newBranch = await branchesCollection.insertOne({
+      name: name,
+      location: location,
+      phoneNumber: phone,
+      users: [],
+      profit: 0,
+      branchID: newBranchID,
+    });
+
+    // Fetch all unique entities from ClassSchedule based on "name"
+    const uniqueEntities = await classScheduleCollection
+      .aggregate([
+        {
+          $group: {
+            _id: '$name',
+            doc: { $first: '$$ROOT' },
+          },
+        },
+        {
+          $replaceRoot: { newRoot: '$doc' },
+        },
+      ])
+      .toArray();
+
+    // Duplicate entities with updated "branch" field
+    const duplicatedEntities = uniqueEntities.map(({ _id, ...entity }) => ({
+      ...entity,
+      branch: newBranchID,
+    }));
+    
+
+    if (duplicatedEntities.length > 0) {
+      await classScheduleCollection.insertMany(duplicatedEntities);
+    }
+
+    await client.close();
+    console.log('save_new_branch_information Database connection closed.');
+
+    return res.status(200).json({
+      success: true,
+      branch: newBranch,
+      duplicatedEntitiesCount: duplicatedEntities.length,
+    });
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ error: 'Internal Server Error', ecode: error })
+    console.log(error);
+    return res.status(500).json({ error: 'Internal Server Error', ecode: error });
   }
-})
+});
+
 
 
 // Route to delete branch by ID
@@ -2591,14 +2230,15 @@ app.get('/save_new_branch_information', async (req, res) => {
 
 
 app.delete('/delete_branch1', async (req, res) => {
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
-  }
-
-  const { id } = req.query; // Branch ID to delete
+  // Connect to MongoDB using URI
+  const client = new MongoClient(uri);
 
   try {
+    await client.connect(); // Connect to MongoDB
+    const db = client.db(); // Use the default database
+
+    const { id } = req.query; // Branch ID to delete
+
     // Find the branch document to get its branchID
     const branch = await db.collection('adminbranches').findOne({ _id: new ObjectId(id) });
     if (!branch) {
@@ -2619,6 +2259,10 @@ app.delete('/delete_branch1', async (req, res) => {
     const adminResult = await db.collection('admins').deleteMany({ branch: branchID });
     console.log(`Admins deleted for branchID: ${branchID}. Count: ${adminResult.deletedCount}`);
 
+    // Close the MongoDB connection
+    await client.close();
+    console.log('Delete_branch1 Database connection closed.');
+
     return res.status(200).json({
       success: true,
       message: 'Branch and related admins deleted successfully',
@@ -2631,6 +2275,7 @@ app.delete('/delete_branch1', async (req, res) => {
   }
 });
 
+
 // Start server (adjust port as needed)
 // app.listen(3000, () => {
 //   console.log('Server is running on port 3000');
@@ -2639,40 +2284,54 @@ app.delete('/delete_branch1', async (req, res) => {
 
 app.get('/ClassBooking', async (req, res) => {
   // Class Booking get All Class Booking from The Database.
-  const db = await connectToDatabase()
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
-  }
+  
+  // Connect to MongoDB using URI
+  const client = new MongoClient(uri);
 
-  const collectionName = 'ClassBooking';
-  const collection = db.collection(collectionName);
   try {
+    await client.connect(); // Connect to MongoDB
+    const db = client.db(); // Use the default database
+    
+    const collectionName = 'ClassBooking';
+    const collection = db.collection(collectionName);
+    
     const bookings = await collection.find({}).sort({ 'username': 1 }).toArray();
     return res.status(200).json(bookings);
 
-
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error ", ecode: error })
+    return res.status(500).json({ error: "Internal Server Error ", ecode: error });
+  } finally {
+    // Close the MongoDB connection
+    await client.close();
+    console.log('ClassBooking Database connection closed.');
   }
 });
+
 app.get('/get_admins_list', async (req, res) => {
   // Class Booking get All Class Booking from The Database.
-  const db = await connectToDatabase()
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
-  }
+  
+  // Connect to MongoDB using URI
+  const client = new MongoClient(uri);
 
-  const collectionName = 'admins';
-  const collection = db.collection(collectionName);
   try {
+    await client.connect(); // Connect to MongoDB
+    const db = client.db(); // Use the default database
+    
+    const collectionName = 'admins';
+    const collection = db.collection(collectionName);
+    
     const bookings = await collection.find({}).sort({ 'email': 1 }).toArray();
     return res.status(200).json(bookings);
 
-
   } catch (error) {
-    return res.status(500).json({ error: "Internal Server Error ", ecode: error })
+    return res.status(500).json({ error: "Internal Server Error ", ecode: error });
+  } finally {
+    // Close the MongoDB connection
+    await client.close();
+    console.log('get_admins_list Database connection closed.');
   }
-})
+});
+
 // fierjfoirejf89r843fei
 app.post('/delete_admin', async (req, res) => {
   const { _id } = req.body;
@@ -2682,14 +2341,16 @@ app.post('/delete_admin', async (req, res) => {
     return res.status(400).json({ error: 'Invalid _id' });
   }
 
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
-  }
+  // Connect to MongoDB using URI
+  const client = new MongoClient(uri);
 
-  const collectionName = 'admins';
-  const collection = db.collection(collectionName);
   try {
+    await client.connect(); // Connect to MongoDB
+    const db = client.db(); // Use the default database
+
+    const collectionName = 'admins';
+    const collection = db.collection(collectionName);
+    
     const result = await collection.deleteOne({ _id: new ObjectId(_id) });
     if (result.deletedCount === 0) {
       return res.status(404).json({ error: 'Record not found' });
@@ -2697,8 +2358,13 @@ app.post('/delete_admin', async (req, res) => {
     return res.status(200).json({ message: 'Record deleted successfully' });
   } catch (error) {
     return res.status(500).json({ error: 'Internal Server Error', ecode: error.message });
+  } finally {
+    // Close the MongoDB connection
+    await client.close();
+    console.log('delete_admin Database connection closed.');
   }
 });
+
 
 
 // app.get('/save_new_admin_user', async (req, res) => {
@@ -2735,16 +2401,17 @@ app.get('/save_new_admin_user', async (req, res) => {
     return res.status(400).json({ error: 'Invalid or missing timezone' });
   }
 
-  // Connect to the database
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
-  }
-
-  const collectionName = 'admins';
-  const collection = db.collection(collectionName);
+  // MongoDB URI
+  const client = new MongoClient(uri);
 
   try {
+    // Connect to MongoDB
+    await client.connect();
+    const db = client.db(); // Use the default database
+
+    const collectionName = 'admins';
+    const collection = db.collection(collectionName);
+
     // Set current time in the provided time zone
     const createdAt = moment().tz(timezone).format(); // ISO 8601 format
 
@@ -2763,8 +2430,13 @@ app.get('/save_new_admin_user', async (req, res) => {
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: 'Internal Server Error Creating New Admin' });
+  } finally {
+    // Close the MongoDB connection
+    await client.close();
+    console.log('save_new_admin_user Database connection closed.');
   }
 });
+
 
 
 // app.get('/update_admin_user', async (req, res) => {
@@ -2805,16 +2477,17 @@ app.get('/update_admin_user', async (req, res) => {
     return res.status(400).json({ error: 'Invalid or missing timezone' });
   }
 
-  // Connect to the database
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
-  }
-
-  const collectionName = 'admins';
-  const collection = db.collection(collectionName);
+  // MongoDB URI
+  const client = new MongoClient(uri);
 
   try {
+    // Connect to MongoDB
+    await client.connect();
+    const db = client.db(); // Use the default database
+
+    const collectionName = 'admins';
+    const collection = db.collection(collectionName);
+
     // Set current time in the provided time zone
     const updatedAt = moment().tz(timezone).format(); // ISO 8601 format
 
@@ -2838,123 +2511,106 @@ app.get('/update_admin_user', async (req, res) => {
   } catch (error) {
     console.error('Error:', error);
     return res.status(500).json({ error: 'Internal Server Error Updating Admin' });
+  } finally {
+    // Close the MongoDB connection
+    await client.close();
+    console.log('update_admin_user Database connection closed.');
   }
 });
 
 
 app.get('/BranchSpecficScreen', async (req, res) => {
-  //Get The Branch Based On Specific branchID 
+  // Get the branch based on specific branchID
   const { id } = req.query;
-  const db = await connectToDatabase()
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
-  }
+
+  let client;
+  try {
+    // Establish a new unique connection for this request
+    client = await MongoClient.connect(uri);
+    const db = client.db();  // Get the database instance
+
+    if (!db) {
+      console.error('Failed to connect to the database.');
+      return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
+    }
 
   const collectionName = 'adminbranches';
   const collection = db.collection(collectionName);
-  try {
-    branch = await collection.findOne({ 'branchID': id })
-    return res.status(200).json({ "success": true, "branch": branch })
+
+    console.log(`Fetching branch with ID: ${id}`);
+    const branch = await collection.findOne({ 'branchID': id });
+
+    return res.status(200).json({ success: true, branch });
+
   } catch (error) {
-    console.log(error)
-    return res.status(500).json({ error: 'Internal Server Error Fetching Branch' })
+    console.error('Error fetching branch:', error);
+    return res.status(500).json({ error: 'Internal Server Error Fetching Branch' });
+  } finally {
+    // Ensure that the connection is closed after the operation
+    try {
+      if (client) {
+        await client.close();
+        console.log('BranchSpecficScreen: Database connection closed');
+      }
+    } catch (closeError) {
+      console.error('Error closing MongoDB connection:', closeError);
+    }
   }
-})
+});
 
-// app.get('/get_classes_for_branch', async (req, res) => {
-//   const { id } = req.query;
-//   const db = await connectToDatabase()
-//   if (!db) {
-//     return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
-//   }
-
-//   const collectionName = 'ClassShcedule';
-//   const collection = db.collection(collectionName);
-//   try {
-//     classes = await collection.find({ 'branch': id }).toArray();
-//     return res.status(200).json({ "success": true, "classes": classes });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).json({ error: 'Internal Server Error Fetching Classes For Branch' })
-//   }
-// })
-
-// app.get('/get_classes_for_branch', async (req, res) => {
-//   const { id } = req.query;
-//   const db = await connectToDatabase();
-
-//   if (!db) {
-//     return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
-//   }
-
-//   const classScheduleCollection = db.collection('ClassShcedule');
-//   const classBookingCollection = db.collection('ClassBooking');
-
-//   try {
-//     // Fetch classes for the given branch
-//     const classes = await classScheduleCollection.find({ branch: id }).toArray();
-
-//     // Prepare an array to hold TotalParticipants count
-//     const TotalParticipants = [];
-
-//     // Loop through each class to gather participant counts
-//     for (const classItem of classes) {
-//       const { the_date } = classItem; // Assuming the_date is an array of date strings
-
-//       // Count TotalParticipants for each date in the_date array
-//       const counts = await Promise.all(the_date.map(async (date) => {
-//         const count = await classBookingCollection.countDocuments({ classTime: date });
-//         return count;
-//       }));
-
-//       // Push the counts into the TotalParticipants array
-//       TotalParticipants.push(...counts);
-//     }
-
-//     return res.status(200).json({ success: true, classes, TotalParticipants });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).json({ error: 'Internal Server Error Fetching Classes For Branch' });
-//   }
-// });
 
 app.get('/get_classes_for_branch', async (req, res) => {
   const { id } = req.query;  // Branch ID passed in the query
-  const db = await connectToDatabase();
 
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
-  }
-
-  const classScheduleCollection = db.collection('ClassShcedule');
-  const classBookingCollection = db.collection('ClassBooking');
-
+  let client;
   try {
+    // Establish a new unique connection for this request
+    client = await MongoClient.connect(uri);
+    const db = client.db();  // Get the database instance
+
+    if (!db) {
+      console.error('Failed to connect to the database.');
+      return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
+    }
+
+    const classScheduleCollection = db.collection('ClassShcedule');
+    const classBookingCollection = db.collection('ClassBooking');
+
+    console.log(`Fetching classes for branch ID: ${id}`);
+
     // Fetch classes for the given branch
     const classes = await classScheduleCollection.find({ branch: id }).toArray();
 
     // Loop through each class to gather participant counts specific to the branch
     for (const classItem of classes) {
-      const { the_date, branch } = classItem;  // Assuming the_date is an array of date strings
+      const { the_date, branch } = classItem; //Assuming the date is an array of strings
 
       // Count TotalParticipants for each date specific to the branch
       const counts = await Promise.all(the_date.map(async (date) => {
-        // Count participants by both classTime and branch
         const count = await classBookingCollection.countDocuments({
           classTime: date,
-          branch: branch  // Ensure we're counting for the specific branch
+          branch: branch
         });
         return count;
       }));
 
-      // Assign TotalParticipants array to each classItem
       classItem.TotalParticipants = counts;
     }
 
     return res.status(200).json({ success: true, classes });
   } catch (error) {
-    console.log(error);
+    console.error('Error fetching classes for branch:', error);
     return res.status(500).json({ error: 'Internal Server Error Fetching Classes For Branch' });
+  } finally {
+    // Ensure that the connection is closed after the operation
+    try {
+      if (client) {
+        await client.close();
+        console.log('get_classes_for_branch: Database connection closed');
+      }
+    } catch (closeError) {
+      console.error('Error closing MongoDB connection:', closeError);
+    }
   }
 });
 
@@ -2962,16 +2618,17 @@ app.get('/get_classes_for_branch', async (req, res) => {
 
 
 app.delete('/delete_class', async (req, res) => {
-  const db = await connectToDatabase();
-
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
-  }
-
-  const ClassShcedule = db.collection('ClassShcedule');
-  const ClassBooking = db.collection('ClassBooking');
+  // MongoDB URI
+  const client = new MongoClient(uri);
 
   try {
+    // Connect to MongoDB
+    await client.connect();
+    const db = client.db(); // Use the default database
+
+    const ClassShcedule = db.collection('ClassShcedule');
+    const ClassBooking = db.collection('ClassBooking');
+
     const { _id } = req.body;
 
     // Delete the class from the ClassSchedule collection
@@ -2984,8 +2641,13 @@ app.delete('/delete_class', async (req, res) => {
   } catch (error) {
     console.error('Error deleting class and related bookings:', error);
     res.status(500).json({ error: 'Failed to delete class and related bookings' });
+  } finally {
+    // Close the MongoDB connection
+    await client.close();
+    console.log('delete_class: Database connection closed.');
   }
 });
+
 
 
 // // diuduew78dhew9879
@@ -3037,28 +2699,25 @@ app.delete('/delete_class', async (req, res) => {
 //   console.log(error)
 // }
 app.put('/update_class', async (req, res) => {
-  //update_class?className=${className}&instructor=${instructor}&schedule=${the_date}&id=${theClass.id}
-  //className=Vikings
-  //instructor=E8%20Team%20ajaltoun
-  //id=1715429537806
-  //availability=Available
-  //description=
-  //capacity=10
-  //schedule=Sun%20May%2005%202024%2004:00:00%20GMT+0300
+
   const { className, instructor, schedule, id, availability, description, capacity, timeEnd, days } = req.body;
   console.log(className, instructor, schedule, id, availability)
   console.log(`PDate => ${schedule}`)
   console.log(`DATE=> ${new Date(schedule)}`)
   console.log(req.body);
   console.log("\n")
-  const db = await connectToDatabase()
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
-  }
 
-  const collectionName = 'ClassShcedule';
-  const collection = db.collection(collectionName);
+  // MongoDB URI
+  const client = new MongoClient(uri);
+
   try {
+    // Connect to MongoDB
+    await client.connect();
+    const db = client.db(); // Use the default database
+
+    const collectionName = 'ClassShcedule';
+    const collection = db.collection(collectionName);
+    
     await collection.updateOne({ 'id': id }, {
       '$set': {
         'className': className,
@@ -3072,26 +2731,37 @@ app.put('/update_class', async (req, res) => {
         'days': days
       }
     });
+    
     return res.status(200).json({ 'success': true });
+
   } catch (error) {
     return res.status(500).json({ error: 'Internal Server Error Updating Class' })
+  } finally {
+    // Close the MongoDB connection
+    await client.close();
+    console.log('update_class Database connection closed.');
   }
 
-
 });
-// Faysal 
+
+
+//Updates already existing class by clicking on it from superadmin manage branches manage classes > class title
 app.put('/update_classNew', async (req, res) => {
 
   const { className, instructor, id, availability, startDate, endDate, description, capacity, days, branch, the_date } = req.body;
   console.log(req.body)
-  const db = await connectToDatabase()
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
-  }
 
-  const collectionName = 'ClassShcedule';
-  const collection = db.collection(collectionName);
+  // MongoDB URI
+  const client = new MongoClient(uri);
+
   try {
+    // Connect to MongoDB
+    await client.connect();
+    const db = client.db(); // Use the default database
+
+    const collectionName = 'ClassShcedule';
+    const collection = db.collection(collectionName);
+
     statos = await collection.updateOne({ 'id': id, 'branch': branch }, {
       '$set': {
         'className': className,
@@ -3108,23 +2778,30 @@ app.put('/update_classNew', async (req, res) => {
     });
     console.log(statos)
     return res.status(200).json({ 'success': true });
+
   } catch (error) {
     return res.status(500).json({ error: 'Internal Server Error Updating Class' })
+  } finally {
+    // Close the MongoDB connection
+    await client.close();
+    console.log('update_classnew: Database connection closed.');
   }
-
-
 });
 
 
 
 
+
 app.get('/AllUsers', async (req, res) => {
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
-  }
-  const collection = db.collection('Users');
+  // MongoDB URI
+  const client = new MongoClient(uri);
+
   try {
+    // Connect to MongoDB
+    await client.connect();
+    const db = client.db(); // Use the default database
+
+    const collection = db.collection('Users');
     const agg = [
       {
         '$addFields': {
@@ -3189,40 +2866,13 @@ app.get('/AllUsers', async (req, res) => {
     return res.status(200).json({ 'success': true, 'users': result });
   } catch (error) {
     return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
+  } finally {
+    // Close the MongoDB connection
+    await client.close();
+    console.log('AllUsers Database connection closed.');
   }
 });
 
-// meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
-// app.delete('/DeleteUser', async (req, res) => {
-//   const { _id } = req.body;
-//   console.log(req.body);
-
-//   if (!_id) {
-//     return res.status(400).json({ error: 'Missing _id in request body' });
-//   }
-
-//   const db = await connectToDatabase();
-//   if (!db) {
-//     return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
-//   }
-
-//   const collection = db.collection('Users');
-//   try {
-//     const objectId = new ObjectId(_id);
-//     const result = await collection.deleteOne({ _id: objectId });
-
-//     if (result.deletedCount === 0) {
-//       return res.status(404).json({ error: 'User not found' });
-//     }
-
-//     console.log(`Deleted user with _id: ${_id}`);
-//     return res.status(200).json({ success: true, message: 'User deleted successfully' });
-//   } catch (error) {
-//     console.error(`Error deleting user with _id: ${_id}`, error);
-//     return res.status(500).json({ error: 'Internal Server Error Deleting User' });
-//   }
-// });
-// diuewhdiuewhdoiw3we3
 
 
 app.post('/getUserFromBooking', async (req, res) => {
@@ -3230,17 +2880,18 @@ app.post('/getUserFromBooking', async (req, res) => {
   const { _id } = req.body;
   console.log("Class ID : ", _id);
 
-  // Connect to the database
-  const db = await connectToDatabase();
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error: Unable to connect to the database' });
-  }
-
-  // Get the ClassBooking collection
-  const classBookingCollection = db.collection("ClassBooking");
-  const userCollection = db.collection('Users');
+  // MongoDB URI
+  const client = new MongoClient(uri);
 
   try {
+    // Connect to MongoDB
+    await client.connect();
+    const db = client.db(); // Use the default database
+
+    // Get the ClassBooking collection
+    const classBookingCollection = db.collection("ClassBooking");
+    const userCollection = db.collection('Users');
+
     // Find documents where clsId matches _id from req.body and project only the userId field
     const userIds = await classBookingCollection.find(
       { clsId: _id },
@@ -3260,8 +2911,13 @@ app.post('/getUserFromBooking', async (req, res) => {
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: 'Internal Server Error: Error Fetching Data' });
+  } finally {
+    // Close the MongoDB connection
+    await client.close();
+    console.log('getUserFromBooking Database connection closed.');
   }
 });
+
 
 
 
@@ -3269,12 +2925,16 @@ app.post('/getUserFromBooking', async (req, res) => {
 app.get('/AllUsersForBranch', async (req, res) => {
   const { bid } = req.query;
   // console.log(bid)
-  const db = await connectToDatabase()
-  if (!db) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
-  }
-  const collection = db.collection('Users');
+
+  // MongoDB URI
+  const client = new MongoClient(uri);
+
   try {
+    // Connect to MongoDB
+    await client.connect();
+    const db = client.db(); // Use the default database
+
+    const collection = db.collection('Users');
     const agg = [
       {
         '$match': {
@@ -3301,7 +2961,8 @@ app.get('/AllUsersForBranch', async (req, res) => {
                   '$toObjectId': '$clsId'
                 }
               }
-            }, {
+            },
+            {
               '$lookup': {
                 'from': 'ClassShcedule',
                 'localField': 'cls',
@@ -3321,18 +2982,24 @@ app.get('/AllUsersForBranch', async (req, res) => {
         }
       }
     ];
+
     const cursor = collection.aggregate(agg);
     const result = await cursor.toArray();
-    console.log(`Returning Users For A Branch ${bid}`)
+    console.log(`Returning Users For A Branch ${bid}`);
     // console.debug(result)
     result.forEach((value) => {
-      console.dir(value)
-    })
-    return res.status(200).json({ 'success': true, 'users': result })
+      console.dir(value);
+    });
+
+    return res.status(200).json({ 'success': true, 'users': result });
   } catch (error) {
-    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
+    return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
+  } finally {
+    // Close the MongoDB connection
+    await client.close();
+    console.log('AllUsersBranch Database connection closed.');
   }
-})
+});
 
 const os = require('os');
 const PORT = process.env.PORT || 5000;
@@ -3351,9 +3018,12 @@ function getPrivateIpAddress() {
   return '127.0.0.1';     //0.0.0.0 NOV 29
 }
 
-app.listen(PORT, IP_ADDRESS, () => { //'0.0.0.0' NOV 29
+app.listen(5000, '0.0.0.0', () => { //'0.0.0.0' NOV 29
   console.log(`server started on http://${IP_ADDRESS}:${PORT}`);
 });
+// app.listen(PORT, IP_ADDRESS, () => { //'0.0.0.0' NOV 29
+//   console.log(`server started on http://${IP_ADDRESS}:${PORT}`);
+// });
 
 
 

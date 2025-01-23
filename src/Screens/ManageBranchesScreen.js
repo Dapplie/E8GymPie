@@ -66,7 +66,8 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
     }
   
     // Detect user's current time zone
-    const userTimeZone = moment.tz.guess();
+    //const userTimeZone = moment.tz.guess();  PierreTimeEdit
+    const userTimeZone = "Asia/Beirut"; // Adjust as needed for other UTC+2 zones
     console.log("User's Time Zone:", userTimeZone);
   
     // Convert `startDate` to the user's local time zone
@@ -130,150 +131,6 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
     }
   };
 
-  // const handleSubmit = async () => {
-  //   // Check if any field is empty. || !instructor ( I should add this condition if they want to add instructor)
-  //   if (!className  || !startDate || !theDates || theDates.length == 0 || isNaN(capacity) || !endDate) {
-  //     Alert.alert('Error', 'Please fill in all fields');
-  //     // Alert.alert('Error', `${className} ${instructor} ${startDate} ${theDates} ${capacity} ${endDate}`);
-  //     // console.log(isNaN(capacity))
-  //     // console.log(capacity)
-  //     return;
-  //   }
-  //   console.log(startDate)
-  //   console.log(the_date);
-  //   the_startdate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate(), the_date.getUTCHours(), the_date.getUTCMinutes()));
-  //   the_startdate = the_startdate.toISOString()
-  //   console.log(the_startdate);
-  //   // return;
-  //   console.log("Submitting ")
-  //   console.log(branch)
-  //   // Call onSubmit with the class details
-  //   /*
-  //       'className':className,
-  //       'instructor':instructor,
-  //       'time':startDate,
-  //       'name':className,
-  //       'availability':availability,
-  //       'description':description,
-  //       'capacity':capacity
-  //   */
-  //   console.log(`Sending Create Classes OF \n\n\t${JSON.stringify({
-  //     'className': className,
-  //     'instructor': instructor,
-  //     'startDate': startDate.toISOString(),
-  //     'endDate': endDate.toISOString(),
-  //     'the_date': theDates,
-  //     'days': days,
-  //     'name': className,
-  //     'description': description,
-  //     'capacity': capacity,
-  //     'branch': 'ALL'
-  //   })}`)
-
-  //   const bodyToSend = JSON.stringify({
-  //     'className': className,
-  //     'instructor': instructor,
-  //     'startDate': startDate.toISOString(),
-  //     'endDate': endDate.toISOString(),
-  //     'the_date': theDates,
-  //     'days': days,
-  //     'name': className,
-  //     'description': description,
-  //     'capacity': capacity,
-  //     'branch': 'ALL'
-  //   });
-  //   try {
-  //     const response = await fetch(`${IP_ADDRESS}/createClassesNew`, {
-  //       method: 'POST',
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: bodyToSend,
-  //     })
-
-
-  //     if (response.status == 200) {
-  //       setClassName('');
-  //       setInstructor('');
-  //       // setSchedule('');
-  //       Alert.alert('Success', 'Class created successfully for all branches.');
-  //       // setShowDatePicker(false);
-  //       // setShowTimePicker(false);
-  //       setCreateClassModalVisible(false);
-  //     }
-
-  //   } catch (error) {
-  //     Alert.alert("Failure", "Couldn't Create Classes for all Branches");
-  //     Alert.alert(error);
-  //   }
-  //   // onSubmit({ className, instructor, schedule:the_date, branch});
-
-  //   // Clear form fields
-
-
-  //   // Show success message
-
-
-  // };
-
-  
-  
-
-  
-  // const handleSubmit = async () => {
-  //   // Check if any field is empty or invalid
-  //   if (!className || !startDate || !theDates || theDates.length == 0 || isNaN(capacity) || !endDate) {
-  //     Alert.alert('Error', 'Please fill in all fields');
-  //     return;
-  //   }
-
-  //   console.log("Submitting");
-  //   console.log(branch);
-
-  //   // Convert the start date to UTC ISO string
-  //   the_startdate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate(), the_date.getUTCHours(), the_date.getUTCMinutes()));
-  //   the_startdate = the_startdate.toISOString();
-  //   console.log(the_startdate);
-
-  //   // Convert the 'theDates' array to Unix timestamps
-  //   const theDatesTimestamps = theDates.map(date => Math.floor(new Date(date).getTime() / 1000));
-
-  //   // Prepare the request body
-  //   const bodyToSend = JSON.stringify({
-  //     'className': className,
-  //     'instructor': instructor,
-  //     'startDate': startDate.toISOString(),
-  //     'endDate': endDate.toISOString(),
-  //     'the_date': theDatesTimestamps, // Send Unix timestamps
-  //     'days': days,
-  //     'name': className,
-  //     'description': description,
-  //     'capacity': capacity,
-  //     'branch': 'ALL'
-  //   });
-
-  //   try {
-  //     const response = await fetch(`${IP_ADDRESS}/createClassesNew`, {
-  //       method: 'POST',
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: bodyToSend,
-  //     });
-
-  //     if (response.status == 200) {
-  //       setClassName('');
-  //       setInstructor('');
-  //       setCreateClassModalVisible(false);
-  //       Alert.alert('Success', 'Class created successfully for all branches.');
-  //     }
-
-  //   } catch (error) {
-  //     Alert.alert("Failure", "Couldn't Create Classes for all Branches");
-  //     Alert.alert(error);
-  //   }
-  // };
-
   const deleteClass = async (id) => {
     try {
       await axios.delete(`${IP_ADDRESS}/delete_class`, {
@@ -313,25 +170,7 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
               />
             </View>
 
-            {/* <View style={{ marginBottom: 25 }}>
-              <Text style={{ color: '#E0E0E0', fontWeight: 'bold', marginBottom: 10, fontSize: 16 }}>Instructors:</Text>
-              <TextInput
-                style={{
-                  borderColor: '#303030',
-                  borderWidth: 1,
-                  borderRadius: 10,
-                  textAlign: 'center',
-                  backgroundColor: '#1E1E1E',
-                  color: '#E0E0E0',
-                  padding: 15,
-                  fontSize: 16,
-                }}
-                placeholder="Instructor"
-                placeholderTextColor="#757575"
-                value={instructor}
-                onChangeText={(text) => setInstructor(text)}
-              />
-            </View> */}
+     
 
             <View style={{ marginBottom: 25 }}>
               <Text style={{ color: '#E0E0E0', fontWeight: 'bold', marginBottom: 10, fontSize: 16 }}>Description:</Text>
@@ -435,30 +274,6 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
                 <Picker.Item key={index} value={value} label={value} />
               ))}
             </Picker>
-
-
-            {/* <View style={{ marginBottom: 25 }}>
-              <Text style={{ color: '#E0E0E0', fontWeight: 'bold', marginBottom: 10, fontSize: 16 }}>@Time:</Text>
-              <TouchableOpacity
-                onPress={() => setShowTimePicker(true)}
-                style={{
-                  borderColor: '#303030',
-                  borderWidth: 1,
-                  borderRadius: 10,
-                  padding: 15,
-                  backgroundColor: '#1E1E1E',
-                  display: 'flex',
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <FontAwesome name="hourglass" size={20} color="white" />
-                <Text style={{ color: '#E0E0E0', textAlign: 'center', fontSize: 16 }}>
-                  {the_date ? `@${String(the_date.getHours())}:${String(the_date.getMinutes())}` : "Select Time"}
-                </Text>
-              </TouchableOpacity>
-            </View> */}
 
 
             <View style={{ marginBottom: 25 }}>
@@ -649,10 +464,6 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
     </LinearGradient>
   );
 };
-
-
-
-
 
 
 const ManageBranchesScreen = ({ route, navigation }) => {

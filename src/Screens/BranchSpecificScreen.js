@@ -631,23 +631,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
                   {the_class.availability === 'Locked' ? 'Locked' : ((the_class.participants < the_class.capacity) && the_class.availability === 'Available') ? 'Available' : 'Full'}
                 </Text>
                 {/* Faysal  */}
-                {/* <TouchableOpacity
-                  style={{
-                    marginTop: 10,
-                    backgroundColor: 'black',
-                    borderRadius: 10,
-                    paddingVertical: 10,
-                    paddingHorizontal: 20,
-                    borderWidth: 2,
-                    borderColor: 'black',
-                    alignItems: 'center',
-                  }}
-                  onPress={() => deleteClass(the_class._id)}
-                >
-                  <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
-                    Delete
-                  </Text>
-                </TouchableOpacity> */}
+             
 
                 <TouchableOpacity
                   style={{

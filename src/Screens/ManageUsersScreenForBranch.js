@@ -1,72 +1,51 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faUserCircle } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
 import { IP_ADDRESS } from '../../config';
 
-const ManageUsersScreenForBranch = ({ route, navigation }) => {
+const ManageUsersScreenForBranch = ({ route }) => {
     const branchId = route.params.branch;
     const [users, setUsers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [sError, setSError] = useState('');
 
     useEffect(() => {
-        try {
-            fetch(`${IP_ADDRESS}/AllUsersForBranch?bid=${branchId}`)
-                .then((res) => {
-                    if (res.status === 200) {
-                        setSError('');
-                        return res.json();
-                    }
-                    setSError(res.status.toString());
-                    return { users: [] };
-                })
-                .then((res) => {
+        setIsLoading(true);
+        fetch(`${IP_ADDRESS}/AllUsersForBranch?bid=${branchId}`)
+            .then((res) => {
+                if (res.status === 200) {
+                    setSError('');
+                    return res.json();
+                }
+                setSError(`Error ${res.status}`);
+                return { users: [] };
+            })
+            .then((res) => {
+                if (Array.isArray(res.users) && res.users.length > 0) {
                     setUsers(res.users);
-                })
-                .catch((err) => {
-                    setUsers([]);
-                    console.warn(err.toString());
-                });
-        } catch (error) {
-            setSError(error.toString());
-        }
-    }, []);
-
-    // const handleDeleteUser = async (_id) => {
-    //     try {
-    //         await axios.delete('http://146.190.32.150:5000/DeleteUser', {
-    //             data: { _id },
-    //         });
-    //         // Refetch users after deletion
-    //         fetch(`http://146.190.32.150:5000/AllUsersForBranch?bid=${branchId}`)
-    //             .then((res) => {
-    //                 if (res.status === 200) {
-    //                     setSError('');
-    //                     return res.json();
-    //                 }
-    //                 setSError(res.status.toString());
-    //                 return { users: [] };
-    //             })
-    //             .then((res) => {
-    //                 setUsers(res.users);
-    //             })
-    //             .catch((err) => {
-    //                 setUsers([]);
-    //                 console.warn(err.toString());
-    //             });
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    // };
+                } else {
+                    setUsers([]); // No valid users found
+                }
+            })
+            .catch((err) => {
+                setSError(err.toString());
+                setUsers([]);
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    }, [branchId]);
 
     return (
         <LinearGradient colors={['#000000', '#1a1a1a']} style={styles.container}>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <Text style={styles.heading}>Users</Text>
-                {users.length === 0 ? (
+                {isLoading ? (
                     <ActivityIndicator size="large" color="white" />
+                ) : users.length === 0 ? (
+                    <Text style={styles.noUsersText}>There are no users for this branch!</Text>
                 ) : (
                     users.map((value, index) => (
                         <View key={index} style={styles.userContainer}>
@@ -74,12 +53,10 @@ const ManageUsersScreenForBranch = ({ route, navigation }) => {
                             <View style={styles.userInfo}>
                                 <Text style={styles.userInfoText}>Name: {value.fullName}</Text>
                                 <Text style={styles.userInfoText}>Phone: {value.phoneNumber}</Text>
-                                <Text style={styles.userInfoText}>Branch: {value.branchName.length > 0 ? value.branchName[0].name : '--'}</Text>
-                                {/* <Text style={styles.userInfoText}>Rank: {value.rank || '--'}</Text> */}
+                                <Text style={styles.userInfoText}>
+                                    Branch: {value.branchName?.[0]?.name || '--'}
+                                </Text>
                                 <Text style={styles.userInfoText}>E-Mail: {value.email}</Text>
-                                {/* <TouchableOpacity onPress={() => handleDeleteUser(value._id)} style={styles.deleteButton}>
-                                    <Text style={styles.deleteButtonText}>Delete</Text>
-                                </TouchableOpacity> */}
                             </View>
                         </View>
                     ))
@@ -148,6 +125,12 @@ const styles = StyleSheet.create({
         fontWeight:'bold',
         fontStyle:'italic',
         textAlign: 'center',
+    },
+    noUsersText: {
+        fontSize: 18,
+        color: '#ffffff',
+        textAlign: 'center',
+        marginVertical: 20,
     },
     errorContainer: {
         position: 'absolute',

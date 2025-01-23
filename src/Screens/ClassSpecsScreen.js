@@ -127,7 +127,8 @@ const ClassSpecsScreen = ({ route, navigation }) => {
     
     const handleSubmit = () => {
         // Detect user's timezone
-        const userTimeZone = moment.tz.guess();
+        const userTimeZone = "Asia/Beirut"; // Adjust as needed for other UTC+2 zones
+       // const userTimeZone = moment.tz.guess();   PierreTimeEdit
         console.log("User's Time Zone:", userTimeZone);
 
         // Convert startDate to the user's timezone

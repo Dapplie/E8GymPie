@@ -28,7 +28,7 @@ function CancelBooking({ route }) {
     };
 
     fetchData();
-    const interval = setInterval(fetchData, 5000); // Update every 5 seconds
+    const interval = setInterval(fetchData, 20000); // Update every 5 seconds
 
     return () => clearInterval(interval);
   }, [branch]); // Remove userId from dependency array to prevent unnecessary re-renders

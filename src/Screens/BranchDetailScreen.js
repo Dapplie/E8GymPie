@@ -63,76 +63,7 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
     return String(parsedInt);
   };
 
-  // const handleSubmit = () => {
-  //   // Check if any field is empty. || !instructor (I should add this condition if they want to add an instructor)
-  //   if (!className  || !startDate || !theDates || theDates.length == 0 || isNaN(capacity) || !endDate) {
-  //     Alert.alert('Error', 'Please fill in all fields');
-  //     return;
-  //   }
-
-  //   console.log(startDate)
-  //   console.log(the_date);
-  //   the_startdate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate(), the_date.getUTCHours(), the_date.getUTCMinutes()));
-  //   the_startdate = the_startdate.toISOString()
-  //   console.log(the_startdate);
-  //   // return;
-  //   console.log("Submitting ")
-  //   console.log(branch)
-  //   // Call onSubmit with the class details
-  //   console.log(`Sending Create Classes OF \n\n\t${JSON.stringify({
-  //     'className': className,
-  //     'instructor': instructor,
-  //     'startDate': startDate,
-  //     'endDate': endDate,
-  //     'the_date': theDates,
-  //     'days': days,
-  //     'name': className,
-  //     'description': description,
-  //     'capacity': capacity,
-  //     'branch': branch
-  //   })}`)
-
-  //   const bodyToSend = JSON.stringify({
-  //     'className': className,
-  //     'instructor': instructor,
-  //     'startDate': startDate.toISOString(),
-  //     'endDate': endDate.toISOString(),
-  //     'the_date': theDates,
-  //     'days': days,
-  //     'name': className,
-  //     'description': description,
-  //     'capacity': capacity,
-  //     'branch': branch
-  //   });
-
-  //   try {
-  //     fetch(`${IP_ADDRESS}/createClassNew`, {
-  //       method: 'POST',
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: bodyToSend,
-  //     })
-  //       .then(res => {
-  //         if (res.status == 200) {
-  //           // Clear form fields
-  //           setClassName('');
-  //           setInstructor('');
-  //           setShowDatePicker(false);
-  //           setShowTimePicker(false);
-
-  //           // Show success message
-  //           Alert.alert('Success', 'Class created successfully.');
-
-  //           // Navigate back to the class list and refresh the data
-  //           navigation.goBack();  // This takes you back to the previous screen
-  //         }
-  //       })
-  //   } catch (error) {
-  //     Alert.alert("Failure", "Couldn't Create Classes for all Branches");
-  //   }
-  //   // onSubmit({ className, instructor, schedule:the_date, branch});
-  // };
+ 
 
   const handleSubmit = () => {
     // Check if any field is empty
@@ -142,7 +73,8 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
     }
 
     // Detect user's local time zone
-    const userTimeZone = moment.tz.guess();
+    //const userTimeZone = moment.tz.guess(); PierreTimeEdit
+    const userTimeZone = "Asia/Beirut"; // Adjust as needed for other UTC+2 zones
     console.log("User's Time Zone:", userTimeZone);
 
 
@@ -257,25 +189,7 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
               />
             </View>
 
-            {/* <View style={{ marginBottom: 25 }}>
-              <Text style={{ color: '#E0E0E0', fontWeight: 'bold', marginBottom: 10, fontSize: 16 }}>Instructors:</Text>
-              <TextInput
-                style={{
-                  borderColor: '#303030',
-                  borderWidth: 1,
-                  borderRadius: 10,
-                  textAlign: 'center',
-                  backgroundColor: '#1E1E1E',
-                  color: '#E0E0E0',
-                  padding: 15,
-                  fontSize: 16,
-                }}
-                placeholder="Instructor"
-                placeholderTextColor="#757575"
-                value={instructor}
-                onChangeText={(text) => setInstructor(text)}
-              />
-            </View> */}
+
 
             <View style={{ marginBottom: 25 }}>
               <Text style={{ color: '#E0E0E0', fontWeight: 'bold', marginBottom: 10, fontSize: 16 }}>Description:</Text>
@@ -612,50 +526,7 @@ const BranchClassScreen = ({ route, navigation }) => {
       });
     }, [branchDetails])
   );
-  {/* useEffect(() => {
-    const fetchClassesForBranch = async (branchId) => {
-      try {
-        const response = await fetch(`${IP_ADDRESS}/get_classes_for_branch?id=${branchId}`);
-        if (response.status === 200) {
-          const data = await response.json();
-          console.log(`Data: ${JSON.stringify(data)}`);
-          if (data.success) {
-            return data.classes;
-          }
-        }
-        throw new Error('Failed to fetch classes');
-      } catch (error) {
-        console.error('Error fetching classes for branch:', error);
-        return [];
-      }
-    };
-    console.log("Branch Details:", branchDetails);
-    fetchClassesForBranch(branchDetails.branchID).then(classes => {
-      console.log("Classes:", classes);
-      setClasses(classes);
-    });
-  }, [branchDetails]);
- */}
-  // const deleteClass = async (id) => {
-  //   try {
-  //     const response = await fetch(`${IP_ADDRESS}/delete_class`, {
-  //       method: 'DELETE',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({ _id: id }),
-  //     });
 
-  //     if (!response.ok) {
-  //       throw new Error('Network response was not ok');
-  //     }
-
-  //     setClasses(classes.filter(item => item._id !== id));;
-  //     Alert.alert('Class deleted successfully!');
-  //   } catch (error) {
-  //     console.error('Error deleting class:', error);
-  //   }
-  // };
 
   const deleteClass = async (id) => {
     try {
@@ -916,37 +787,7 @@ const BranchDetailScreen = ({ route, navigation }) => {
     );
   };
 
-  {/*const handleDeleteBranch = () => {
-    console.log(`Delete branch clicked ${branch.branchID}`);
-    Alert.alert(
-      "Delete Branch",
-      "Are you sure you want to delete this branch?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel"
-        },
-        {
-          text: "OK",
-          onPress: () => {
-            fetch(`${IP_ADDRESS}/delete_branch1?id=${branch._id}`, {
-              method: 'DELETE',
-            })
-              .then(response => response.json())
-              .then(data => {
-                console.log('Branch deleted:', data);
-                navigation.navigate('ManageBranchesScreen', { refresh: Math.random() });
-              })
-              .catch(error => {
-                console.error('Error deleting branch:', error);
-                Alert.alert('Error', 'Failed to delete branch. Please try again.');
-              });
-          }
-        }
-      ]
-    );
-  }
-    */}
+
 
   const generatePdf = async () => {
     const htmlContent = `
