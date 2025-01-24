@@ -115,11 +115,8 @@ const AllBranchClasses = ({ route }) => {
             cls.the_date.map((time, index) => (
               <View key={index} style={styles.row}>
                 <Text style={styles.text}>
-                  {new Date(time).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true,
-                  })}
+                  {/* Display the time directly without creating a new Date object */}
+                  {time}
                   {', Participants: '}
                   {cls.TotalParticipants && cls.TotalParticipants[index] != null ? (
                     <Text style={styles.text}>{cls.TotalParticipants[index]}</Text>

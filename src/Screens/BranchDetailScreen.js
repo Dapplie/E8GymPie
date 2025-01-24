@@ -34,9 +34,6 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
   const [days, setDays] = useState('Monday')
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-  const formatTime = (time) => {
-    return `@${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
-  };
 
   // Faysal
   // this code is to make theDate as array of dateTimes
@@ -73,10 +70,8 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
     }
 
     // Detect user's local time zone
-    //const userTimeZone = moment.tz.guess(); PierreTimeEdit
-    const userTimeZone = "Asia/Beirut"; // Adjust as needed for other UTC+2 zones
+    const userTimeZone = moment.tz.guess();
     console.log("User's Time Zone:", userTimeZone);
-
 
     // Convert `startDate` and `endDate` to the user's local time zone
     const localStartDate = moment.utc(startDate).tz(userTimeZone).format(); // Convert to local time
@@ -85,11 +80,15 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
     console.log("Converted Start Date:", localStartDate);
     console.log("Converted End Date:", localEndDate);
 
-    // Convert `theDates` to the user's local time zone
-    const convertedDates = theDates.map(date =>
-      moment.utc(date).tz(userTimeZone).format() // Converts UTC date to local time zone
-    );
-    //endDate.toISOString()
+    // Convert `theDates` to the desired "hh:mmAM/PM" format
+    const convertedDates = theDates.map((date) => {
+      const parsedDate = new Date(date);
+      return parsedDate.toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      });
+    });
 
     console.log("Converted Dates:", convertedDates);
 
@@ -116,7 +115,7 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
         },
         body: bodyToSend,
       })
-        .then(res => {
+        .then((res) => {
           if (res.status === 200) {
             // Clear form fields
             setClassName('');
@@ -130,11 +129,11 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
             // Navigate back to the class list and refresh the data
             navigation.goBack(); // This takes you back to the previous screen
           }
-        })
+        });
     } catch (error) {
       Alert.alert("Failure", "Couldn't Create Classes for all Branches");
     }
-  };
+  };  
 
 
 
@@ -652,9 +651,20 @@ const BranchClassScreen = ({ route, navigation }) => {
 
                 <Text style={{ fontSize: 14, color: '#E0E0E0' }}>Time:</Text>
                 {Array.isArray(classItem.the_date) && classItem.the_date.length > 0 ? (
-                  classItem.the_date.map((time, index) => (
+                classItem.the_date.map((time, index) => {
+                  // Parse "12:33 PM" into a Date object
+                  const [hourMinute, period] = time.split(' '); // Split into time and AM/PM
+                  const [hours, minutes] = hourMinute.split(':'); // Split into hours and minutes
+
+                  const date = new Date(); // Create a new Date object for today
+                  date.setHours(
+                    period === 'PM' ? parseInt(hours) % 12 + 12 : parseInt(hours) % 12,
+                    parseInt(minutes)
+                  ); // Set hours and minutes
+
+                  return (
                     <Text key={index} style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
-                      {new Date(time).toLocaleTimeString([], {
+                      {date.toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
                         hour12: true,
@@ -664,10 +674,11 @@ const BranchClassScreen = ({ route, navigation }) => {
                         ? classItem.TotalParticipants[index]
                         : 0}
                     </Text>
-                  ))
-                ) : (
-                  <Text style={{ fontSize: 14, color: '#E0E0E0' }}>No times available</Text>
-                )}
+                  );
+                })
+              ) : (
+                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>No times available</Text>
+              )}
 
 
                 <Text style={{ fontSize: 12, marginTop: 5, fontWeight: 'bold', color: classItem.availability === 'Locked' ? 'orange' : ((classItem.participants < classItem.capacity) && classItem.availability === 'Available') ? 'green' : 'red' }}>

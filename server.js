@@ -900,10 +900,10 @@ app.post('/ClassBooking', async (req, res) => {
       branch,
     });
 
-    // Convert the received time to Asia/Beirut timezone
-    const beirutTime = moment.tz(time, "Asia/Beirut").format();  // Format it to ISO 8601 string
+    // Do not modify the time, store it exactly as it is received
+    const receivedTime = time; // Directly store the time as it is received
 
-    console.log("Converted Class Time (Asia/Beirut):", beirutTime);
+    console.log("Received Class Time (No conversion):", receivedTime);
 
     // Fetch branch admin emails
     const collectionAdmins = db.collection('admins');
@@ -935,7 +935,7 @@ app.post('/ClassBooking', async (req, res) => {
     const existingBooking = await collectionClassBooking.findOne({
       'userId': userid,
       'clsId': clsId,
-      'classTime': beirutTime,  // Use the converted Beirut time
+      'classTime': receivedTime,  // Use the received time directly
     });
     if (!existingBooking) {
       const collectionClassSchedule = db.collection('ClassShcedule');
@@ -948,7 +948,7 @@ app.post('/ClassBooking', async (req, res) => {
           username,
           email,
           className,
-          classTime: beirutTime,  // Store the Beirut time
+          classTime: receivedTime,  // Store the received time directly
           userId: userid,
           clsId: clsId,
           branch,
@@ -960,9 +960,9 @@ app.post('/ClassBooking', async (req, res) => {
             { $inc: { participants: 1 } }
           );
 
-          // Format the picked time
-          const formattedTime = moment.tz(time, "Asia/Beirut").format('hh:mm A');
-          console.log(`Formatted Time: ${formattedTime}`);
+          // Format the picked time for email
+          const formattedTime = moment(receivedTime, 'hh:mmA').format('hh:mm A');
+          console.log(`Formatted Time for email: ${formattedTime}`);
 
           // Email options
           const mailOptions = {
@@ -1050,10 +1050,10 @@ app.post('/ClassBooking', async (req, res) => {
   });
 
   try {
-    // Convert the received time to Asia/Beirut timezone
-    const beirutTime = moment.tz(time, "Asia/Beirut").format();  // Format it to ISO 8601 string
+    // Save the received time as is, without any conversion
+    const receivedTime = time;
 
-    console.log("Converted Class Time (Asia/Beirut):", beirutTime);
+    console.log("Received Class Time (no conversion):", receivedTime);
 
     // Fetch branch admin emails
     const collectionAdmins = db.collection('admins');
@@ -1085,7 +1085,7 @@ app.post('/ClassBooking', async (req, res) => {
     const existingBooking = await collectionClassBooking.findOne({
       'userId': userid,
       'clsId': clsId,
-      'classTime': beirutTime,  // Use the converted Beirut time
+      'classTime': receivedTime,  // Use the received time directly
     });
     if (!existingBooking) {
       const collectionClassSchedule = db.collection('ClassShcedule');
@@ -1098,7 +1098,7 @@ app.post('/ClassBooking', async (req, res) => {
           username,
           email,
           className,
-          classTime: beirutTime,  // Store the Beirut time
+          classTime: receivedTime,  // Store the received time directly
           userId: userid,
           clsId: clsId,
           branch,
@@ -1110,8 +1110,8 @@ app.post('/ClassBooking', async (req, res) => {
             { $inc: { participants: 1 } }
           );
 
-          // Format the picked time
-          const formattedTime = moment(beirutTime).format('hh:mm A');
+          // Format the picked time for email
+          const formattedTime = moment(receivedTime).format('hh:mm A');
 
           const mailOptions = {
             from: 'youremail@gmail.com',
@@ -1131,7 +1131,6 @@ app.post('/ClassBooking', async (req, res) => {
                 <p style="font-size: 16px; line-height: 1.5; text-align: left; margin: 0 auto; max-width: 400px;">
                   <strong>What:</strong> ${className}<br />
                   <strong>When:</strong> ${formattedTime}<br />
-               
                 </p>
                 <p style="font-size: 16px; line-height: 1.5; margin-top: 20px; color: #333333;">
                   If you need any assistance with your booking, please email us at 
@@ -1140,7 +1139,6 @@ app.post('/ClassBooking', async (req, res) => {
               </div>
             `,
           };
-          
 
           transporter.sendMail(mailOptions, (error, info) => {
             if (error) {
@@ -2206,26 +2204,7 @@ app.get('/save_new_branch_information', async (req, res) => {
 
 
 
-// Route to delete branch by ID
-// app.delete('/delete_branch1', async (req, res) => {
-//   const db = await connectToDatabase();
-//   if (!db) {
-//     return res.status(500).json({ error: 'Internal Server Error Connecting To DB' });
-//   }
-//   const { id } = req.query;
 
-//   try {
-//     const result = await db.collection('adminbranches').deleteOne({ _id: new ObjectId(id) });
-//     if (result.deletedCount === 0) {
-//       return res.status(404).json({ success: false, message: 'Branch not found' });
-//     }
-//     console.log(`Branch deleted with ID: ${id}`);
-//     return res.status(200).json({ success: true, message: 'Branch deleted successfully' });
-//   } catch (error) {
-//     console.log(error);
-//     return res.status(500).json({ error: 'Internal Server Error', ecode: error });
-//   }
-// });
 
 
 
@@ -2583,17 +2562,19 @@ app.get('/get_classes_for_branch', async (req, res) => {
 
     // Loop through each class to gather participant counts specific to the branch
     for (const classItem of classes) {
-      const { the_date, branch } = classItem; //Assuming the date is an array of strings
-
-      // Count TotalParticipants for each date specific to the branch
-      const counts = await Promise.all(the_date.map(async (date) => {
+      const { the_date, branch } = classItem; // Assuming the_date is an array of time strings like "12:33PM"
+    
+      // Count TotalParticipants for each date-specific time for the branch
+      const counts = await Promise.all(the_date.map(async (time) => {
+        // Query the database for the count of participants at this specific time and branch
         const count = await classBookingCollection.countDocuments({
-          classTime: date,
+          classTime: time,  // Directly use the AM/PM time string
           branch: branch
         });
         return count;
       }));
 
+      // Add the participant counts to the class item
       classItem.TotalParticipants = counts;
     }
 
@@ -2702,8 +2683,8 @@ app.put('/update_class', async (req, res) => {
 
   const { className, instructor, schedule, id, availability, description, capacity, timeEnd, days } = req.body;
   console.log(className, instructor, schedule, id, availability)
-  console.log(`PDate => ${schedule}`)
-  console.log(`DATE=> ${new Date(schedule)}`)
+  //console.log(`PDate => ${schedule}`)
+  //console.log(`DATE=> ${new Date(schedule)}`)
   console.log(req.body);
   console.log("\n")
 
@@ -3018,12 +2999,12 @@ function getPrivateIpAddress() {
   return '127.0.0.1';     //0.0.0.0 NOV 29
 }
 
-app.listen(5000, '0.0.0.0', () => { //'0.0.0.0' NOV 29
-  console.log(`server started on http://${IP_ADDRESS}:${PORT}`);
-});
-// app.listen(PORT, IP_ADDRESS, () => { //'0.0.0.0' NOV 29
+// app.listen(5000, '0.0.0.0', () => { //'0.0.0.0' NOV 29
 //   console.log(`server started on http://${IP_ADDRESS}:${PORT}`);
 // });
+app.listen(PORT, IP_ADDRESS, () => { //'0.0.0.0' NOV 29
+  console.log(`server started on http://${IP_ADDRESS}:${PORT}`);
+});
 
 
 

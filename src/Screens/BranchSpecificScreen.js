@@ -611,11 +611,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
                 {Array.isArray(the_class.the_date) && the_class.the_date.length > 0 ? (
                   the_class.the_date.map((time, index) => (
                     <Text key={index} style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
-                      {new Date(time).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true,
-                      })}
+                      {time} {/* Use time directly */}
                       {', Participants: '}
                       {the_class.TotalParticipants && the_class.TotalParticipants[index] != null
                         ? the_class.TotalParticipants[index]

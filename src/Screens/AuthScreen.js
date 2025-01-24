@@ -370,10 +370,11 @@ const styles = StyleSheet.create({
   },
   superAdminIcon: {
     position: 'absolute',
-    top: 50,
-    right: 20,
+    top: 20,
+    right: 0,
     zIndex: 1,
     tintColor: 'white',
+    padding: 25,
   },
   videoBackground: {
     position: 'absolute',

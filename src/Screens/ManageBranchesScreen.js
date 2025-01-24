@@ -66,30 +66,23 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
     }
   
     // Detect user's current time zone
-    //const userTimeZone = moment.tz.guess();  PierreTimeEdit
     const userTimeZone = "Asia/Beirut"; // Adjust as needed for other UTC+2 zones
     console.log("User's Time Zone:", userTimeZone);
   
-    // Convert `startDate` to the user's local time zone
+    // Convert `startDate` and `endDate` to the user's local time zone
     const localStartDate = moment.utc(startDate).tz(userTimeZone).format();
-    console.log("Converted Start Date:", localStartDate);
-  
-    // Convert `endDate` to the user's local time zone
     const localEndDate = moment.utc(endDate).tz(userTimeZone).format();
-    console.log("Converted End Date:", localEndDate);
   
-    // Convert `theDates` array to the user's local time zone
-    const convertedDates = theDates.map(date =>
-      moment.utc(date).tz(userTimeZone).format()
-    );
-    console.log("Converted Dates Array:", convertedDates);
+    // Format `theDates` to "hh:mm A" format (e.g., "11:44 PM")
+    const formattedDates = theDates.map(date => moment(date, "HH:mm").format("hh:mm A"));
+    console.log("Formatted Dates Array:", formattedDates);
   
     console.log(`Sending Create Classes OF \n\n\t${JSON.stringify({
       'className': className,
       'instructor': instructor,
       'startDate': localStartDate, // Converted startDate
       'endDate': localEndDate,     // Converted endDate
-      'the_date': convertedDates,  // Converted theDates
+      'the_date': formattedDates,  // Formatted theDates
       'days': days,
       'name': className,
       'description': description,
@@ -102,7 +95,7 @@ const CreateClassForm = ({ navigation, onSubmit, branch, setCreateClassModalVisi
       'instructor': instructor,
       'startDate': localStartDate,
       'endDate': localEndDate,
-      'the_date': convertedDates,
+      'the_date': formattedDates,
       'days': days,
       'name': className,
       'description': description,

@@ -284,15 +284,14 @@ const ClassScheduleScreen = ({ route, navigation }) => {
                         value={null}
                         enabled={false}
                       />
-                      {cls.the_date.map((time, index) => (
-                        <Picker.Item
-                          key={index}
-                          label={new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                          value={time}
-                          style={styles.timePickerDisplay}
-
-                        />
-                      ))}
+                  {cls.the_date.map((time, index) => (
+                    <Picker.Item
+                      key={index}
+                      label={time} // Use the time string directly
+                      value={time}
+                      style={styles.timePickerDisplay}
+                    />
+                  ))}
                     </Picker>
                   </View>
                 </View>

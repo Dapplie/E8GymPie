@@ -126,11 +126,7 @@ const ManageUsersScreen = ({ route, navigation }) => {
                                         <Text style={{ fontSize: 16, color: '#fff' }}>- {val['className']}</Text>
                                         {val['Class'].length > 0 && (
                                             <Text style={{ fontSize: 16, color: '#fff' }}>
-                                                Every {val['Class'][0]['days']} @ {new Date(val['classTime']).toLocaleTimeString('en-US', {
-                                                    hour: 'numeric',
-                                                    minute: 'numeric',
-                                                    hour12: true
-                                                })}
+                                              Every {val['Class'][0]['days']} @ {val['classTime']}
                                             </Text>
                                         )}
                                     </View>

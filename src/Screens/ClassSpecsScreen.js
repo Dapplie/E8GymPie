@@ -16,7 +16,7 @@ const ClassSpecsScreen = ({ route, navigation }) => {
     const [schedule, setSchedule] = useState(new Date(theClass.startDate))
     const [scheduleEnd, setScheduleEnd] = useState(theClass.endDate ? new Date(theClass.endDate) : new Date(theClass.the_time))
     const [days, setDays] = useState(theClass.days || 'Monday')
-    const [the_date, setTheDate] = useState(theClass.the_date)
+    const [the_date, setTheDate] = useState([])
     const [showDatePicker, setShowDatePicker] = useState(false)
     const [showDateEndPicker, setShowDateEndPicker] = useState(false)
     const [showTimePicker, setShowTimePicker] = useState(false)
@@ -31,16 +31,6 @@ const ClassSpecsScreen = ({ route, navigation }) => {
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
     const [newTime, setNewTime] = useState(new Date());
     const [showNewTimePicker, setShowNewTimePicker] = useState(false);
-    // const addTime = () => {
-    //     if (Array.isArray(the_date) && the_date.length > 0) {
-    //         setTheDate([newTime]);
-    //         // setTheDate([...the_date, newTime]);
-    //     } else {
-    //         setTheDate([newTime]);
-    //     }
-
-    //     setNewTime(new Date());
-    // }
     const addTime = () => {
         // Append new time to the existing `the_date` array
         setTheDate([...the_date, newTime]);
@@ -56,6 +46,34 @@ const ClassSpecsScreen = ({ route, navigation }) => {
     }
 
 
+    useEffect(() => {
+        // Process the_class.the_date to ensure it contains proper Date objects
+        const processedDates = theClass.the_date.map((timeString) => {
+            try {
+                // Check if timeString is already a valid Date object or ISO string
+                const isValidDate = !isNaN(new Date(timeString).getTime());
+                if (isValidDate) {
+                    return new Date(timeString); // Return as-is if valid
+                }
+    
+                // If not valid, parse and convert time strings
+                const today = new Date();
+                const match = timeString.match(/(\d+):(\d+)\s?(AM|PM)/);
+                if (!match) throw new Error("Invalid time format");
+    
+                const [hours, minutes, period] = match.slice(1);
+                const hours24 = period === "PM" ? (parseInt(hours) % 12) + 12 : parseInt(hours) % 12;
+                today.setHours(hours24, parseInt(minutes), 0, 0);
+    
+                return new Date(today); // Return the newly created Date object
+            } catch (error) {
+                console.warn(`Skipping invalid time string: ${timeString}`, error);
+                return null; // Return null for invalid entries
+            }
+        }).filter(Boolean); // Remove null entries from the array
+    
+        setTheDate(processedDates); // Set the valid dates to state
+      }, [theClass.the_date]); // Re-run the effect if theClass.the_date changes
 
     useEffect(() => {
         if (theClass.availability == "Available") {
@@ -78,57 +96,11 @@ const ClassSpecsScreen = ({ route, navigation }) => {
     console.log("Branch => ")
     console.log(branch)
     console.log("===========================================")
-    // const handleSubmit = () => {
-    //     the_startdate = new Date(Date.UTC(schedule.getUTCFullYear(), schedule.getUTCMonth(), schedule.getUTCDate(), 10, 10));
-    //     // console.log(`The Date Before Send = ${the_date}`)
-    //     the_startdate = the_startdate.toISOString()
 
-    //     the_timeEnd = new Date(Date.UTC(scheduleEnd.getUTCFullYear(), scheduleEnd.getUTCMonth(), scheduleEnd.getUTCDate(), 10, 10));
-    //     the_timeEnd = the_timeEnd.toISOString()
-    //     // console.log(`Sending The Date As  = ${the_date}`)
-    //     //&schedule=${the_date}
-    //     fetch(`${IP_ADDRESS}/update_classNew`, {
-    //         method: "PUT",
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //             // 'Content-Type': 'application/x-www-form-urlencoded',
-    //         },
-    //         body: JSON.stringify({
-    //             'className': className,
-    //             'instructor': instructor,
-    //             'id': theClass.id,
-    //             'availability': availability,
-    //             'startDate': the_startdate,
-    //             'endDate': the_timeEnd,
-    //             'description': description,
-    //             'capacity': capacity,
-    //             'days': days,
-    //             'branch': branch,
-    //             'the_date': the_date
-    //         }),
-    //         /* className=${className}
-    //           instructor=${instructor}
-    //           id=${theClass.id}
-    //           availability=${availability}
-    //           description=${description}
-    //           capacity=${capacity}
-    //           schedule=${the_date}`
-    //         */
-
-    //     })
-    //         .then(res => {
-    //             if (res.status == 200) {
-    //                 navigation.navigate(from, { branch, refresh: Math.random() });
-    //             }
-    //         }).catch(err => {
-    //             console.log(err)
-    //         })
-    // }
     
     const handleSubmit = () => {
         // Detect user's timezone
-        const userTimeZone = "Asia/Beirut"; // Adjust as needed for other UTC+2 zones
-       // const userTimeZone = moment.tz.guess();   PierreTimeEdit
+        const userTimeZone = moment.tz.guess();
         console.log("User's Time Zone:", userTimeZone);
 
         // Convert startDate to the user's timezone
@@ -146,16 +118,25 @@ const ClassSpecsScreen = ({ route, navigation }) => {
             .format();
 
         console.log("Converted End Date (the_timeEnd):", the_timeEnd);
-
-        // Convert 'the_date' array to ISO strings in user's timezone
-        const theDateInUserTimezone = Array.isArray(the_date)
-            ? the_date.map(date =>
-                moment.utc(date).tz(userTimeZone).format() // Convert each date to ISO string in user's timezone
-            )
-            : moment.utc(the_date).tz(userTimeZone).format(); // If the_date is a single date
-
-        console.log("Converted Dates Array (the_date):", theDateInUserTimezone);
-
+    
+        // Reformat the_date array to ensure all times are in "12:33 PM" format
+        const reformattedDates = the_date.map(date => {
+            // Check if date is already in a valid time format
+            let formattedDate;
+            
+            if (/^\d{1,2}:\d{2} (AM|PM)$/i.test(date)) {
+                // If it's already in "12:33 PM" format, just use it
+                formattedDate = date;
+            } else {
+                // Otherwise, convert it to "12:33 PM" format using moment
+                formattedDate = moment(date).format("hh:mm A");
+            }
+            
+            return formattedDate;
+        });
+    
+        console.log("Reformatted Dates Array (the_date):", reformattedDates);
+    
         // Prepare the payload
         const payload = {
             className: className,
@@ -168,7 +149,7 @@ const ClassSpecsScreen = ({ route, navigation }) => {
             capacity: capacity,
             days: days,
             branch: branch,
-            the_date: theDateInUserTimezone, // Sending as UNIX timestamps
+            the_date: reformattedDates, // Sending as an array of formatted time strings
         };
 
         console.log("Updating Class with Payload:", JSON.stringify(payload));
@@ -198,55 +179,6 @@ const ClassSpecsScreen = ({ route, navigation }) => {
                 <Text style={styles.formTitle}>Updating Class</Text>
                 <Text style={styles.formTitle}>{className}</Text>
 
-                {/* <Text style={styles.label}>Class Name:</Text> */}
-                {/* <TextInput
-                    style={styles.input}
-                    placeholder="Class Name"
-                    placeholderTextColor="#777"
-                    value={className}
-                    onChangeText={(text) => setClassName(text)}
-                /> */}
-
-                {/* <Text style={styles.label}>Instructor:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Instructor"
-                    placeholderTextColor="#777"
-                    value={instructor}
-                    onChangeText={(text) => setInstructor(text)}
-                /> */}
-
-                {/* <Text style={styles.label}>Description:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Description"
-                    placeholderTextColor="#777"
-                    value={description || ''}
-                    multiline={true}
-                    onChangeText={(text) => setDescription(text)}
-                /> */}
-
-                {/* <Text style={styles.label}>Capacity:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Capacity"
-                    placeholderTextColor="#777"
-                    value={String(capacity)}
-                    inputMode='numeric'
-                    onChangeText={(text) => setCapacity(parseInt(text) || 10)}
-                    keyboardType='numeric'
-                /> */}
-
-                {/* <Text style={styles.label}>Registered:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Participants"
-                    placeholderTextColor="#777"
-                    value={String(participants)}
-                    inputMode='numeric'
-                    keyboardType='numeric'
-                    editable={false}
-                /> */}
 
                 <Text style={styles.label}>Starting Date:</Text>
                 <TouchableOpacity
@@ -282,25 +214,7 @@ const ClassSpecsScreen = ({ route, navigation }) => {
 
                 <View style={{ marginBottom: 25 }}>
                     <Text style={{ color: '#E0E0E0', fontWeight: 'bold', marginBottom: 10, fontSize: 16 }}>Times:</Text>
-                    {/* <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
-                        {Array.isArray(the_date) && the_date.length > 0 ? (
-                            <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 10, marginBottom: 10, backgroundColor: '#1E1E1E', borderRadius: 5, padding: 5 }}>
-                                <Text style={{ color: '#E0E0E0', marginRight: 5 }}>
-                                    {(() => {
 
-                                        const time = new Date(the_date[0]);
-                                        return (`${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`);
-                                    })()}
-                                </Text>
-                                <TouchableOpacity onPress={() => removeTime(0)}>
-                                    <FontAwesome name="trash" size={16} color="red" />
-                                </TouchableOpacity>
-                            </View>
-                        )
-                            : (
-                                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>No times available</Text>
-                            )}
-                    </View> */}
                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
                         {Array.isArray(the_date) && the_date.length > 0 ? (
                             the_date.map((date, index) => {
@@ -520,108 +434,75 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
     }, [isEnabled])
 
     useEffect(() => {
-        setStartDate(new Date(theClass.startDate))
-        setEndDate(new Date(theClass.endDate))
-        setDays(theClass.days)
-        setTheDate(theClass.the_date)
-        setDescription(theClass.description)
-        setCapacity(theClass.capacity)
-        setParticipants(theClass.participants)
-        setAvailability(theClass.availability)
-        setIsEnabled(theClass.availability == "Available")
-    }, [theClass])
+        // Convert the_date array strings into Date objects if necessary
+        const formattedDates = theClass.the_date.map((timeString) => {
+            try {
+                // Check if timeString is already a valid Date object or ISO string
+                const isValidDate = !isNaN(new Date(timeString).getTime());
+                if (isValidDate) {
+                    return new Date(timeString); // Return as-is if valid
+                }
+    
+                // If not valid, parse and convert time strings
+                const today = new Date();
+                const match = timeString.match(/(\d+):(\d+)\s?(AM|PM)/);
+                if (!match) throw new Error("Invalid time format");
+    
+                const [hours, minutes, period] = match.slice(1);
+                const hours24 = period === "PM" ? (parseInt(hours) % 12) + 12 : parseInt(hours) % 12;
+                today.setHours(hours24, parseInt(minutes), 0, 0);
+    
+                return new Date(today); // Return the newly created Date object
+            } catch (error) {
+                console.warn(`Skipping invalid time string: ${timeString}`, error);
+                return null; // Return null for invalid entries
+            }
+        }).filter(Boolean); // Remove null entries from the array
+    
+        // Update state with converted dates and other properties
+        setStartDate(new Date(theClass.startDate));
+        setEndDate(new Date(theClass.endDate));
+        setDays(theClass.days);
+        setTheDate(formattedDates); // Set formatted dates
+        setDescription(theClass.description);
+        setCapacity(theClass.capacity);
+        setParticipants(theClass.participants);
+        setAvailability(theClass.availability);
+        setIsEnabled(theClass.availability === "Available");
+    }, [theClass]);    
     console.log(theClass)
     console.log(from)
     console.log(branch)
-    // const handleSubmit = () => {
-    //     the_dates = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate(), 10, 10));
-    //     // console.log(`The Date Before Send = ${the_date}`)
-    //     the_dates = the_dates.toISOString()
 
-    //     the_timeEnd = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate(), 10, 10));
-    //     the_timeEnd = the_timeEnd.toISOString()
-    //     // console.log(`Sending The Date As  = ${the_date}`)
-    //     //&schedule=${the_date}
-    //     console.log('Updating Class ')
-    //     console.log(JSON.stringify({
-    //         'className': className,
-    //         'instructor': instructor,
-    //         'id': theClass.id,
-    //         'availability': availability,
-    //         'startDate': the_dates,
-    //         'endDate': the_timeEnd,
-    //         'description': description,
-    //         'capacity': capacity,
-    //         'days': days,
-    //         'branch': branch.branchID,
-    //         'the_date': the_date
-    //     }))
-    //     fetch(`${IP_ADDRESS}/update_classNew`, {
-    //         method: "PUT",
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //             // 'Content-Type': 'application/x-www-form-urlencoded',
-    //         },
-    //         body: JSON.stringify({
-    //             'className': className,
-    //             'instructor': instructor,
-    //             'id': theClass.id,
-    //             'availability': availability,
-    //             'startDate': the_dates,
-    //             'endDate': the_timeEnd,
-    //             'description': description,
-    //             'capacity': capacity,
-    //             'days': days,
-    //             'branch': branch.branchID,
-    //             'the_date': the_date
-    //         }),
-    //         /* className=${className}
-    //           instructor=${instructor}
-    //           id=${theClass.id}
-    //           availability=${availability}
-    //           description=${description}
-    //           capacity=${capacity}
-    //           schedule=${the_date}`
-    //         */
-
-    //     })
-    //         .then(res => {
-    //             if (res.status == 200) {
-    //                 navigation.navigate(from, { branch, refresh: Math.random() });
-    //             }
-    //         }).catch(err => {
-    //             console.log(err)
-    //         })
-    // }
 
     const handleSubmit = () => {
         // Detect user's current timezone
         const userTimeZone = moment.tz.guess();
         console.log("User's Time Zone:", userTimeZone);
-
+    
         // Convert startDate to user's timezone
         const the_dates = moment
             .utc(startDate) // Parse as UTC
             .tz(userTimeZone) // Convert to user's timezone
-            .format();
-
+            .format(); // Keep full ISO format
+    
         console.log("Converted Start Date (the_dates):", the_dates);
-
+    
         // Convert endDate to user's timezone
         const the_timeEnd = moment
             .utc(endDate) // Parse as UTC
             .tz(userTimeZone) // Convert to user's timezone
-            .format();
-
+            .format(); // Keep full ISO format
+    
         console.log("Converted End Date (the_timeEnd):", the_timeEnd);
-
-        // Convert the_date array to user's timezone
+    
+        // Convert the_date array to user's timezone and format as "11:44 PM"
         const convertedDates = the_date.map(date =>
-            moment.utc(date).tz(userTimeZone).format()
+            moment.utc(date).tz(userTimeZone).format("hh:mm A") // Format as "11:44 PM"
         );
-
+    
         console.log("Converted Dates Array (the_date):", convertedDates);
-
+    
         // Prepare the payload
         const payload = {
             className: className,
@@ -634,11 +515,11 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
             capacity: capacity,
             days: days,
             branch: branch.branchID,
-            the_date: convertedDates,
+            the_date: convertedDates, // Use formatted dates
         };
-
+    
         console.log("Updating Class with Payload:", JSON.stringify(payload));
-
+    
         // Send the updated data
         fetch(`${IP_ADDRESS}/update_classNew`, {
             method: "PUT",
@@ -655,7 +536,7 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
             .catch(err => {
                 console.error("Error updating class:", err);
             });
-    };
+    };    
 
     return (
         <LinearGradient colors={["#000", "#333"]} style={{ flex: 1 }}>
@@ -663,23 +544,7 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
                 <Text style={styles.formTitle}>Updating Class</Text>
                 <Text style={styles.formTitle}>{className}</Text>
 
-                {/* <Text style={styles.label}>Class Name:</Text> */}
-                {/* <TextInput
-                    style={styles.input}
-                    placeholder="Class Name"
-                    placeholderTextColor="#777"
-                    value={className}
-                    onChangeText={(text) => setClassName(text)}
-                /> */}
 
-                {/* <Text style={styles.label}>Instructor:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Instructor"
-                    placeholderTextColor="#777"
-                    value={instructor}
-                    onChangeText={(text) => setInstructor(text)}
-                /> */}
 
                 <Text style={styles.label}>Description:</Text>
                 <TextInput
@@ -702,26 +567,7 @@ const ClassSpecsScreenSuperAdmin = ({ route, navigation }) => {
                     onChangeText={(text) => setCapacity(parseInt(text) || '')}
                     keyboardType='numeric'
                 />
-                {/* <TextInput
-                    style={styles.input}
-                    placeholder="Capacity"
-                    placeholderTextColor="#777"
-                    value={String(capacity)}
-                    inputMode='numeric'
-                    onChangeText={(text) => setCapacity(parseInt(text) || 10)}
-                    keyboardType='numeric'
-                /> */}
 
-                {/* <Text style={styles.label}>Registered:</Text>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Participants"
-                    placeholderTextColor="#777"
-                    value={String(participants)}
-                    inputMode='numeric'
-                    keyboardType='numeric'
-                    editable={false}
-                /> */}
 
                 <Text style={styles.label}>Starting Date:</Text>
                 <TouchableOpacity

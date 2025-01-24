@@ -87,7 +87,7 @@ const OrderPageScreen = () => {
             <table>
               <tr><th>Username</th><td>${booking.username}</td></tr>
               <tr><th>Class Name</th><td>${booking.className}</td></tr>
-              <tr><th>Class Time</th><td>${new Date(booking.classTime).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</td></tr>
+              <tr><th>Class Time</th><td>${booking.classTime}</td></tr>
             </table>`
     )).join('')}
           <h1>Recent Checkouts</h1>
@@ -132,7 +132,9 @@ const OrderPageScreen = () => {
             <ScrollView style={styles.scrollContainer}>
               {bookings.map((booking) => (
                 <View key={booking._id} style={styles.booking}>
-                  <Text style={styles.bookingText}>{`${booking.username} - Class: ${booking.className}, Time: ${new Date(booking.classTime).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}`}</Text>
+                 <Text style={styles.bookingText}>
+                  {`${booking.username} - Class: ${booking.className}, Time: ${booking.classTime}`}
+                 </Text>
                 </View>
               ))}
             </ScrollView>

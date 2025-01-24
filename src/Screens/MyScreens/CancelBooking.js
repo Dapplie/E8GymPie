@@ -67,7 +67,7 @@ function CancelBooking({ route }) {
               <Text style={styles.bookingText}>Class Name: {booking.className}</Text>
               {/* <Text style={styles.bookingText}>Class Time: {booking.classTime}</Text> */}
               <Text style={styles.bookingText}>
-                Class Time: {new Date(booking.classTime).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                Class Time: {booking.classTime}
               </Text>
 
               <TouchableOpacity
