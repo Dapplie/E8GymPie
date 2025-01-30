@@ -19,6 +19,7 @@
       "bundleIdentifier": "com.julianode.E8Gym"
     },
     "android": {
+      "versionCode": 2,
       "adaptiveIcon": {
         "foregroundImage": "assets/logo_1.png",
         "backgroundColor": "#ffffff"
