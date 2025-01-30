@@ -59,26 +59,26 @@ function CancelBooking({ route }) {
       <Text style={styles.text}>My Bookings</Text>
 
       {bookingData && (
-        <ScrollView>
-          {bookingData.map((booking) => (
-            <View key={booking._id} style={styles.bookingCard}>
-              <Text style={styles.bookingText}>Username: {booking.username}</Text>
-              <Text style={styles.bookingText}>Email: {booking.email}</Text>
-              <Text style={styles.bookingText}>Class Name: {booking.className}</Text>
-              {/* <Text style={styles.bookingText}>Class Time: {booking.classTime}</Text> */}
-              <Text style={styles.bookingText}>
-                Class Time: {booking.classTime}
-              </Text>
-
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => handleCancelBooking(booking._id)}
-              >
-                <Text style={styles.cancelButtonText}>Cancel Booking</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
+      <ScrollView>
+      {bookingData.length === 0 ? (
+        <Text style={styles.noBookingsText}>You have no bookings</Text>
+      ) : (
+        bookingData.map((booking) => (
+          <View key={booking._id} style={styles.bookingCard}>
+            <Text style={styles.bookingText}>Username: {booking.username}</Text>
+            <Text style={styles.bookingText}>Email: {booking.email}</Text>
+            <Text style={styles.bookingText}>Class Name: {booking.className}</Text>
+            <Text style={styles.bookingText}>Class Time: {booking.classTime}</Text>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => handleCancelBooking(booking._id)}
+            >
+              <Text style={styles.cancelButtonText}>Cancel Booking</Text>
+            </TouchableOpacity>
+          </View>
+        ))
+      )}
+    </ScrollView>    
       )}
     </SafeAreaView>
   );
@@ -124,6 +124,12 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     fontSize: 16,
   },
+  noBookingsText: {
+    textAlign: 'left',
+    color: 'white',
+    fontSize: 16,
+    marginVertical: 20,
+  },  
 });
 
 export default CancelBooking;

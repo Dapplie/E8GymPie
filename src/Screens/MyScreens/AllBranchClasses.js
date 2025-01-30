@@ -27,7 +27,7 @@ const AllBranchClasses = ({ route }) => {
 
     const interval = setInterval(() => {
       fetchData(); // Fetch data every 2 seconds
-    }, 2000);
+    }, 20000);
 
     return () => clearInterval(interval); // Clear interval on component unmount
   }, [branchId]);
@@ -60,24 +60,7 @@ const AllBranchClasses = ({ route }) => {
             <Text style={[styles.text, styles.bold]}>occupancy: </Text>
             <Text style={styles.text}>{cls.participants}/{cls.capacity}</Text>
           </View>
-          {/* <View style={styles.row}>
-            <Text style={[styles.text, styles.bold]}>Instructor: </Text>
-            <Text style={styles.text}>{cls.instructor}</Text>
-          </View> */}
 
-
-          {/* <View style={styles.row}>
-            <Text style={[styles.text, styles.bold]}>Participants: </Text>
-            <Text style={styles.text}>{cls.participants}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={[styles.text, styles.bold]}>Capacity: </Text>
-            <Text style={styles.text}>{cls.capacity}</Text>
-          </View> */}
-          {/* <View style={styles.row}>
-            <Text style={[styles.text, styles.bold]}>Description: </Text>
-            <Text style={styles.text}>{cls.description}</Text>
-          </View> */}
           <View style={styles.row}>
             <Text style={[styles.text, styles.bold]}>Day: </Text>
             <Text style={styles.text}>{cls.days}</Text>
@@ -102,11 +85,6 @@ const AllBranchClasses = ({ route }) => {
               {new Date(cls.endDate).toISOString().split('T')[0]}
             </Text>
           </View>
-
-          {/* <View style={styles.row}>
-            <Text style={[styles.text, styles.bold]}>All Participants: </Text>
-            <Text style={styles.text}>{cls.participants}</Text>
-          </View> */}
 
           <View style={styles.row}>
             <Text style={[styles.text, styles.bold]}>Time:</Text>

@@ -20,16 +20,20 @@ const RequestToContactUs = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        <Text style={styles.messageText}>Requests To Contact Us</Text>
-        {contacts.map(contact => (
+    <ScrollView contentContainerStyle={styles.scrollView}>
+      <Text style={styles.messageText}>Requests To Contact Us</Text>
+      {contacts.length === 0 ? (
+        <Text style={styles.noRequestsText}>There are no contact us requests</Text>
+      ) : (
+        contacts.map(contact => (
           <View key={contact._id} style={styles.contactContainer}>
             <Text style={styles.contactText}>Full Name: {contact.fullName}</Text>
             <Text style={styles.contactText}>Email: {contact.email}</Text>
             <Text style={styles.contactText}>Phone: {contact.phone}</Text>
           </View>
-        ))}
-      </ScrollView>
+        ))
+      )}
+    </ScrollView>
     </SafeAreaView>
   );
 };
@@ -63,6 +67,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
   },
+  noRequestsText: {
+    textAlign: 'left',
+    color: 'white',
+    fontSize: 16,
+    marginTop: 10,
+  },  
 });
 
 export default RequestToContactUs;

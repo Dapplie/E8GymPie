@@ -487,15 +487,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
         </TouchableOpacity>
         <View
           style={{
-            // backgroundColor: '#000',
-            // flex: 1,
-            // padding: 20,
-            // alignItems: 'center',
             backgroundColor: 'black',
-            // padding: 10,
-            borderRadius: 10,
-            // borderColor: 'white',
-            // borderWidth: 1,
             shadowColor: 'white',
             shadowOffset: { width: 0, height: 0 },
             shadowOpacity: 0.8,
@@ -506,9 +498,9 @@ const BranchSpecificScreen = ({ route, navigation }) => {
             marginBottom: 20,
             width: '80%',
             alignSelf: 'center',
+            borderRadius: 10,
           }}
         >
-          {/* Classes */}
           <Text
             style={{
               width: '100%',
@@ -516,29 +508,26 @@ const BranchSpecificScreen = ({ route, navigation }) => {
               color: '#fff',
               textAlign: 'center',
               fontWeight: 'bold',
-              marginTop:5,
+              marginTop: 5,
               marginBottom: 20,
             }}
           >
             Classes
           </Text>
-          {/* Faysal */}
-          {/* <TouchableOpacity
-    style={{
-      backgroundColor: '#fff',
-      paddingVertical: 10,
-      paddingHorizontal: 20,
-      borderRadius: 5,
-      marginBottom: 20,
-    }}
-    onPress={() => setCreateClassModalVisible(true)}
-  >
-    <Text style={{ color: '#000', fontSize: 16 }}>
-      Add New Class
-    </Text>
-  </TouchableOpacity> */}
-          {/* ta7ettttttttttttttttttttttttttttt */}
-          {classes.map((the_class) => (
+
+        {classes.length === 0 ? (
+          <Text
+            style={{
+              color: '#E0E0E0',
+              fontSize: 18,
+              textAlign: 'center',
+              marginVertical: 20,
+            }}
+          >
+            There are no classes in this branch.
+          </Text>
+        ) : (
+          classes.map((the_class) => (
             <View
               key={the_class.id}
               style={{
@@ -553,7 +542,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
                 shadowOpacity: 0.25,
                 shadowRadius: 3.84,
                 elevation: 5,
-                width: '80%'
+                width: '80%',
               }}
             >
               <TouchableOpacity
@@ -578,57 +567,76 @@ const BranchSpecificScreen = ({ route, navigation }) => {
                   >
                     {the_class.className}
                   </Text>
-                  {/* <Text style={{ color: '#fff', marginTop: 5 }}>
-                    Instructor: {the_class.instructor}
-                  </Text> */}
                 </View>
               </TouchableOpacity>
-              <View style={{ borderTopWidth: 1, borderTopColor: '#303030', paddingTop: 5 }}>
-
-                
-                <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
-                    Description: {the_class.description}  </Text>
-
-
-                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>occupancy: {the_class.participants}/{the_class.capacity}</Text>
-                
-                {/* Star and end date */}
+              <View
+                style={{
+                  borderTopWidth: 1,
+                  borderTopColor: '#303030',
+                  paddingTop: 5,
+                }}
+              >
+                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
+                  Description: {the_class.description}
+                </Text>
+                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
+                  Occupancy: {the_class.participants}/{the_class.capacity}
+                </Text>
                 <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
                   Start Date: {new Date(the_class.startDate).toLocaleDateString()}
                 </Text>
                 <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
                   End Date: {new Date(the_class.endDate).toLocaleDateString()}
                 </Text>
-
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                  <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
-                    Day: {the_class.days}  </Text>
-
-                  {/* {new Date(the_class.the_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} */}
+                  <Text
+                    style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}
+                  >
+                    Day: {the_class.days}
+                  </Text>
                 </View>
-
                 <Text style={{ fontSize: 14, color: '#E0E0E0' }}>Time:</Text>
                 {Array.isArray(the_class.the_date) && the_class.the_date.length > 0 ? (
                   the_class.the_date.map((time, index) => (
-                    <Text key={index} style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
-                      {time} {/* Use time directly */}
-                      {', Participants: '}
-                      {the_class.TotalParticipants && the_class.TotalParticipants[index] != null
+                    <Text
+                      key={index}
+                      style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}
+                    >
+                      {time},{' '}
+                      Participants:{' '}
+                      {the_class.TotalParticipants &&
+                      the_class.TotalParticipants[index] != null
                         ? the_class.TotalParticipants[index]
                         : 0}
                     </Text>
                   ))
                 ) : (
-                  <Text style={{ fontSize: 14, color: '#E0E0E0' }}>No times available</Text>
+                  <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
+                    No times available
+                  </Text>
                 )}
-
-
-                <Text style={{ fontSize: 12,marginTop:5, marginBottom: 5, fontWeight: 'bold', color: the_class.availability === 'Locked' ? 'orange' : ((the_class.participants < the_class.capacity) && the_class.availability === 'Available') ? 'green' : 'red' }}>
-                  {the_class.availability === 'Locked' ? 'Locked' : ((the_class.participants < the_class.capacity) && the_class.availability === 'Available') ? 'Available' : 'Full'}
+                <Text
+                  style={{
+                    fontSize: 12,
+                    marginTop: 5,
+                    marginBottom: 5,
+                    fontWeight: 'bold',
+                    color:
+                      the_class.availability === 'Locked'
+                        ? 'orange'
+                        : the_class.participants < the_class.capacity &&
+                          the_class.availability === 'Available'
+                        ? 'green'
+                        : 'red',
+                  }}
+                >
+                  {the_class.availability === 'Locked'
+                    ? 'Locked'
+                    : the_class.participants < the_class.capacity &&
+                      the_class.availability === 'Available'
+                    ? 'Available'
+                    : 'Full'}
                 </Text>
-                {/* Faysal  */}
-             
-
                 <TouchableOpacity
                   style={{
                     marginTop: 10,
@@ -641,18 +649,26 @@ const BranchSpecificScreen = ({ route, navigation }) => {
                     alignItems: 'center',
                   }}
                   onPress={() => {
-                    navigation.navigate('BookedClients', { classId: the_class._id });
+                    navigation.navigate('BookedClients', {
+                      classId: the_class._id,
+                    });
                     console.log(`Class ID: ${the_class._id}`);
                   }}
                 >
-                  <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontSize: 16,
+                        fontWeight: 'bold',
+                      }}
+                    >
                     Booked Clients
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
-          ))}
-
+              ))
+            )}
         </View>
         {/* fo22222222222222222 */}
 

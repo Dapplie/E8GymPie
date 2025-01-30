@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 500,
+    width: '95%',
     height: 80,
   },
   logoBackground: {

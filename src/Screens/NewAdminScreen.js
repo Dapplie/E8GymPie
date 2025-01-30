@@ -47,52 +47,6 @@ const NewAdminScreen = ({ route, navigation }) => {
                 Alert.alert('error', err)
             })
     }, [refresh])
-    // const SaveBranch = () => {
-    //     const timeZone = moment.tz.guess();
-    //     console.log(timeZone); // Example output: "America/New_York"
-    //     let errors = false;
-    //     if (!validateEmail(email)) {
-    //         errors = true;
-    //         Alert.alert("E-Mail", "Invalid E-Mail");
-    //     }
-    //     if (password.trim().length <= 5) {
-    //         errors = true;
-    //         Alert.alert("Password", "Password Should be at least 6 Characters");
-    //     }
-    //     if (selectedBranch == null) {
-    //         errors = true;
-    //         Alert.alert("Branch", "Branch Must Be Selected")
-    //     }
-    //     if (errors == false) {
-    //         fetch(
-    //             `${IP_ADDRESS}/save_new_admin_user?name=${name}&phone=${phone}&email=${email}&password=${password}&info=${info}&branch=${selectedBranch}`
-    //         )
-    //             .then((res) => {
-    //                 if (res.status == 200) {
-    //                     return res.json();
-    //                 } else {
-    //                     return undefined;
-    //                 }
-    //             })
-    //             .then((res) => {
-    //                 if (res == undefined) {
-    //                     Alert.alert("Error Creating New Branch");
-    //                 } else {
-    //                     console.log("We Recieved ");
-    //                     console.log(res);
-    //                     navigation.navigate("ManageAdminsScreen", {
-    //                         refresh: Math.floor(Math.random() * 1000),
-    //                     });
-    //                 }
-
-    //                 // setToNavigate(['BranchDetailScreen',branch2])
-    //             })
-    //             .catch((err) => {
-    //                 Alert.alert("Err", err);
-    //             });
-    //     }
-
-    // }
 
     const SaveBranch = () => {
         const timeZone = moment.tz.guess(); // Automatically detects the admin's time zone

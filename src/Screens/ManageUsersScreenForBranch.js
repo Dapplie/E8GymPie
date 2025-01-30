@@ -44,20 +44,20 @@ const ManageUsersScreenForBranch = ({ route }) => {
                 <Text style={styles.heading}>Users</Text>
                 {isLoading ? (
                     <ActivityIndicator size="large" color="white" />
-                ) : users.length === 0 ? (
-                    <Text style={styles.noUsersText}>There are no users for this branch!</Text>
-                ) : (
+                    ) : users.length === 0 ? (
+                    <Text style={styles.noUsersText}>There are no users in this branch!</Text>
+                    ) : (
                     users.map((value, index) => (
                         <View key={index} style={styles.userContainer}>
-                            <FontAwesomeIcon icon={faUserCircle} size={50} color="#ffffff" />
-                            <View style={styles.userInfo}>
-                                <Text style={styles.userInfoText}>Name: {value.fullName}</Text>
-                                <Text style={styles.userInfoText}>Phone: {value.phoneNumber}</Text>
-                                <Text style={styles.userInfoText}>
-                                    Branch: {value.branchName?.[0]?.name || '--'}
-                                </Text>
-                                <Text style={styles.userInfoText}>E-Mail: {value.email}</Text>
-                            </View>
+                        <FontAwesomeIcon icon={faUserCircle} size={50} color="#ffffff" />
+                        <View style={styles.userInfo}>
+                            <Text style={styles.userInfoText}>Name: {value.fullName}</Text>
+                            <Text style={styles.userInfoText}>Phone: {value.phoneNumber}</Text>
+                            <Text style={styles.userInfoText}>
+                            Branch: {value.branchName?.[0]?.name || '--'}
+                            </Text>
+                            <Text style={styles.userInfoText}>E-Mail: {value.email}</Text>
+                        </View>
                         </View>
                     ))
                 )}
@@ -149,6 +149,12 @@ const styles = StyleSheet.create({
         textShadowOffset: { width: 1, height: 1 },
         textShadowRadius: 2,
     },
+    noUsersText: {
+        textAlign: 'left',
+        color: 'white',
+        fontSize: 16,
+        marginTop: 20,
+      },      
 });
 
 export default ManageUsersScreenForBranch;

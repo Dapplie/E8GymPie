@@ -1384,8 +1384,7 @@ app.post('/ChangePassword', async (req, res) => {
 // Route for SignUpScreen
 
 app.post('/SignUpScreen', async (req, res) => {
-  const uri = 'your-database-uri-here'; // Replace with your MongoDB URI
-  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+  const client = new MongoClient(uri);
 
   try {
     await client.connect();
@@ -2418,35 +2417,6 @@ app.get('/save_new_admin_user', async (req, res) => {
 
 
 
-// app.get('/update_admin_user', async (req, res) => {
-//   //update_admin_user?id=${admin._id}&name=${name}&phone=${phone}&email=${email}&password=${password}&info=${info}&branch=${selectedBranch}
-//   const { id, name, phone, email, password, info, branch } = req.query;
-//   const db = await connectToDatabase()
-//   if (!db) {
-//     return res.status(500).json({ error: 'Internal Server Error Connecting To DB' })
-//   }
-
-//   const collectionName = 'admins';
-//   const collection = db.collection(collectionName);
-//   try {
-//     const users = await collection.updateOne({ '_id': new ObjectId(id) }, {
-//       '$set': {
-//         name: name,
-//         phone: phone,
-//         email: email,
-//         password: password,
-//         info: info,
-//         branch: branch,
-//         updated_at: Date.now()
-//       }
-//     })
-//     return res.status(200).json({ 'success': true, 'branch': users });
-//   } catch (error) {
-//     return res.status(500).json({ error: 'Internal Server Error Creating New Admin' })
-//   }
-
-// });
-
 app.get('/update_admin_user', async (req, res) => {
   // Destructure query parameters, including timezone
   const { id, name, phone, email, password, info, branch, timezone } = req.query;
@@ -2855,7 +2825,7 @@ app.get('/AllUsers', async (req, res) => {
 });
 
 
-
+//1-29-2025
 app.post('/getUserFromBooking', async (req, res) => {
   // Extract _id from req.body
   const { _id } = req.body;
@@ -2865,30 +2835,39 @@ app.post('/getUserFromBooking', async (req, res) => {
   const client = new MongoClient(uri);
 
   try {
-    // Connect to MongoDB
     await client.connect();
-    const db = client.db(); // Use the default database
-
-    // Get the ClassBooking collection
+    const db = client.db();
     const classBookingCollection = db.collection("ClassBooking");
     const userCollection = db.collection('Users');
 
-    // Find documents where clsId matches _id from req.body and project only the userId field
-    const userIds = await classBookingCollection.find(
+    // Find documents where clsId matches _id and project userId & classTime
+    const bookings = await classBookingCollection.find(
       { clsId: _id },
-      { projection: { userId: 1, _id: 0 } }
+      { projection: { userId: 1, classTime: 1, _id: 0 } }
     ).toArray();
 
-    // Map userIds to ObjectId
-    const userIdObjects = userIds.map(({ userId }) => new ObjectId(userId));
+    // Group classTimes by userId
+    const classTimesByUser = bookings.reduce((acc, { userId, classTime }) => {
+      if (!acc[userId]) {
+        acc[userId] = [];
+      }
+      acc[userId].push(classTime);
+      return acc;
+    }, {});
 
-    // Find users in Users collection where _id is in userIdObjects
-    const users = await userCollection.find(
-      { _id: { $in: userIdObjects } }
-    ).toArray();
+    // Convert userId strings to ObjectId
+    const userIdObjects = Object.keys(classTimesByUser).map(id => new ObjectId(id));
 
-    // Send the user records in the response
-    res.json(users);
+    // Find users in Users collection
+    const users = await userCollection.find({ _id: { $in: userIdObjects } }).toArray();
+
+    // Append combined classTime to each user
+    const usersWithClassTime = users.map(user => ({
+      ...user,
+      classTime: classTimesByUser[user._id.toString()].join(", ") || null
+    }));
+
+    res.json(usersWithClassTime);
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: 'Internal Server Error: Error Fetching Data' });
@@ -2898,7 +2877,6 @@ app.post('/getUserFromBooking', async (req, res) => {
     console.log('getUserFromBooking Database connection closed.');
   }
 });
-
 
 
 

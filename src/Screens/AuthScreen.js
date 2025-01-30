@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   welcomeText: {
-    marginTop: 40,
+    marginTop: 0,
     marginBottom: 120,
     fontSize: 35,
     fontWeight: 'bold',

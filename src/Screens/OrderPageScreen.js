@@ -130,25 +130,33 @@ const OrderPageScreen = () => {
           <View style={{ ...styles.section, padding: 10 }}>
             <Text style={styles.title}>Recent Bookings</Text>
             <ScrollView style={styles.scrollContainer}>
-              {bookings.map((booking) => (
-                <View key={booking._id} style={styles.booking}>
-                 <Text style={styles.bookingText}>
-                  {`${booking.username} - Class: ${booking.className}, Time: ${booking.classTime}`}
-                 </Text>
-                </View>
-              ))}
+              {bookings.length === 0 ? (
+                <Text style={styles.noBookingsText}>There are no recent bookings</Text>
+              ) : (
+                bookings.map((booking) => (
+                  <View key={booking._id} style={styles.booking}>
+                    <Text style={styles.bookingText}>
+                      {`${booking.username} - Class: ${booking.className}, Time: ${booking.classTime}`}
+                    </Text>
+                  </View>
+                ))
+              )}
             </ScrollView>
           </View>
 
           <View style={{ ...styles.section, padding: 10 }}>
             <Text style={styles.title}>Recent Checkouts</Text>
             <ScrollView style={styles.scrollContainer}>
-              {checkouts.map((checkout) => (
+            {checkouts.length === 0 ? (
+              <Text style={styles.noCheckoutsText}>There are no recent checkouts</Text>
+            ) : (
+              checkouts.map((checkout) => (
                 <View key={checkout._id} style={styles.checkout}>
                   <Text style={styles.checkoutText}>{`${checkout.firstName} ${checkout.lastName} - Total Cost: $${checkout.totalCost}`}</Text>
                 </View>
-              ))}
-            </ScrollView>
+              ))
+            )}
+          </ScrollView>
           </View>
         </View>
       </ScrollView>
@@ -202,6 +210,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
   },
+  noBookingsText: {
+    textAlign: 'left',
+    color: 'white',
+    fontSize: 16,
+    marginTop: 10,
+  },
+  noCheckoutsText: {
+    textAlign: 'left',
+    color: 'white',
+    fontSize: 16,
+    marginTop: 10,
+  },  
 });
 
 export default OrderPageScreen;

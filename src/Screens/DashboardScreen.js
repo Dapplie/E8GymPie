@@ -116,33 +116,36 @@ const DashboardScreen = ({ route, navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <Header />
+      <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-start', padding: 20}}>
       <View>
         {/* Display User Image */}
         {image ? (
           <Image source={{ uri: image }} style={styles.userImage} />
         ) : (
           <Image
-            source={require('../../assets/user.png')} // Use a local default image
+            source={require('../../assets/user1.png')} // Use a local default image
             style={styles.userImage}
           />
         )}
       </View>
-      <View style={{ backgroundColor: 'black', flex: 1, marginBottom: 40, alignItems: 'center', justifyContent: 'center', top: -60,
-    position: 'relative'}}>
+      <View style={{ backgroundColor: 'black', position: 'relative'}}>
         <Image
           source={require('../../assets/own33.jpg')}
-          style={{ width: 200, height: 200, marginBottom: 20 }}
+          style={{ width: 150, height: 200, marginTop: -20 }}
           resizeMode="contain"
         />
-        <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
+      </View>
+      </View>
+
+      <View style={{ backgroundColor: 'black', marginBottom: 40, alignItems: 'center', justifyContent: 'center',
+    position: 'relative'}}>
+      <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold', textAlign: 'center'}}>
           Welcome to Endurance Eight!
         </Text>
         <Text style={{ color: 'white', textAlign: 'center', paddingHorizontal: 20 }}>
           E8 gym is a Circuit-based, general strength and condition training with aim to improve overall strength, endurance, flexibility, coordination, and balance, while also reducing the risk of injury. Our workouts are suitable for multiple age groups and all fitness levels.
         </Text>
-      </View>
-
-     
+        </View>
 
       <View style={{ flexDirection: 'row', borderRadius: 10, borderWidth: 1, borderColor: 'white', justifyContent: 'space-between', backgroundColor: '#1a1a1a', padding: 20, borderRadius: 10, marginBottom: 20 }}>
         <View style={{ flex: 1 }}>
@@ -328,13 +331,13 @@ const DashboardScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   userImage: {
-    width: 60,
-    height: 60,
+    width: 55,
+    height: 55,
     borderRadius: 25,
     borderWidth: 1,
     borderColor: '#fff',
     zIndex: 2,
-    marginLeft: 10,
+    marginRight: 10,
   },
   container: {
     flex: 1,

@@ -925,12 +925,16 @@ const BranchDetailScreen = ({ route, navigation }) => {
             </View>
           </View>
           <ScrollView style={[styles.userTable, { height: 70 }]}>
-            {filteredUsers.map(user => (
-              <View key={user.id} style={styles.userRow}>
-                <Text style={styles.userText}>- {user.username}</Text>
-                <Text style={styles.userEmail}>({user.email})</Text>
-              </View>
-            ))}
+            {filteredUsers.length === 0 ? (
+              <Text style={styles.noUsersText}>There are no users for this branch!</Text>
+            ) : (
+              filteredUsers.map(user => (
+                <View key={user.id} style={styles.userRow}>
+                  <Text style={styles.userText}>- {user.username}</Text>
+                  <Text style={styles.userEmail}>({user.email})</Text>
+                </View>
+              ))
+            )}
           </ScrollView>
         </View>
       </ScrollView>
@@ -1097,6 +1101,12 @@ const styles = StyleSheet.create({
     color: '#aaa',
     marginLeft: 5,
   },
+  noUsersText: {
+    textAlign: 'left',
+    color: 'white',
+    fontSize: 16,
+    marginTop: 10,
+  },  
 });
 
 export { BranchClassScreen };

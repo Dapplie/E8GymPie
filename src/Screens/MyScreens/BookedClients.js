@@ -36,20 +36,26 @@ const BookedClients = ({ route }) => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {clients.map(client => (
-          <TouchableOpacity key={client._id} style={styles.card}>
-            <Text style={styles.label}>Full Name:</Text>
-            <Text style={styles.text}>{client.fullName}</Text>
-            <Text style={styles.label}>Email:</Text>
-            <Text style={styles.text}>{client.email}</Text>
-            <Text style={styles.label}>Phone Number:</Text>
-            <Text style={styles.text}>{client.phoneNumber}</Text>
-            <Text style={styles.label}>Date of Birth:</Text>
-            <Text style={styles.text}>{formatDate(client.dob)}</Text>
-            <Text style={styles.label}>Branch:</Text>
-            <Text style={styles.text}>{client.branch}</Text>
-          </TouchableOpacity>
-        ))}
+        {clients.length === 0 ? (
+          <Text style={styles.noClientsText}>There are no users booked for this class</Text>
+        ) : (
+          clients.map(client => (
+            <TouchableOpacity key={client._id} style={styles.card}>
+              <Text style={styles.label}>Full Name:</Text>
+              <Text style={styles.text}>{client.fullName}</Text>
+              <Text style={styles.label}>Email:</Text>
+              <Text style={styles.text}>{client.email}</Text>
+              <Text style={styles.label}>Phone Number:</Text>
+              <Text style={styles.text}>{client.phoneNumber}</Text>
+              <Text style={styles.label}>Date of Birth:</Text>
+              <Text style={styles.text}>{formatDate(client.dob)}</Text>
+              <Text style={styles.label}>Branch:</Text>
+              <Text style={styles.text}>{client.branch}</Text>
+              <Text style={styles.label}>Class Time:</Text>
+              <Text style={styles.text}>{client.classTime}</Text>
+            </TouchableOpacity>
+          ))
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -69,6 +75,7 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     marginTop: 50,
+    paddingBottom: 50,
     backgroundColor: '#000000',
     alignItems: 'center',
   },
@@ -92,6 +99,12 @@ const styles = StyleSheet.create({
     color: 'white',
     marginBottom: 15,
     fontSize: 16,
+  },
+  noClientsText: {
+    color: 'white',
+    fontSize: 18,
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 

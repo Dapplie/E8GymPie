@@ -74,9 +74,22 @@ const ManageAdminsScreen = ({ route, navigation }) => {
       </ScrollView>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>Manage Admins</Text>
-        {Admins.map((branch, index) => (
-          <TouchableOpacity activeOpacity={0.5} key={index} style={styles.branchCard} onPress={() => goToBranchDetail(branch)}>
-            <Image source={branchimages[Math.floor(Math.random() * branchimages.length)]} style={styles.branchImage} />
+        {Admins.length === 0 ? (
+          <Text style={{ color: 'white', fontSize: 16, textAlign: 'center', marginTop: 0 }}>
+            There are no admins
+          </Text>
+        ) : (
+            Admins.map((branch, index) => (
+              <TouchableOpacity
+                activeOpacity={0.5}
+                key={index}
+                style={styles.branchCard}
+                onPress={() => goToBranchDetail(branch)}
+              >
+            <Image
+              source={branchimages[Math.floor(Math.random() * branchimages.length)]}
+              style={styles.branchImage}
+            />
             <Text style={styles.branchName}>{branch.name}</Text>
             <TouchableOpacity
               style={{
@@ -93,7 +106,8 @@ const ManageAdminsScreen = ({ route, navigation }) => {
             </TouchableOpacity>
 
           </TouchableOpacity>
-        ))}
+        ))
+      )}
         <View style={styles.iconContainer}>
           <FontAwesomeIcon icon={faDumbbell} size={30} color="#fff" style={{ transform: [{ rotate: '45deg' }] }} />
         </View>
