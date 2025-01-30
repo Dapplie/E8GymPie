@@ -1,9 +1,10 @@
 import { Picker } from '@react-native-picker/picker';
-import { Video } from 'expo-av';
+//import { Video } from 'expo-av';
 import React, { useEffect, useState } from 'react';
 import { IP_ADDRESS } from '../../config';
 const { View, Text, StyleSheet, Dimensions, ScrollView, TextInput, Button, TouchableOpacity, TouchableHighlight, Alert } = require('react-native');
 import moment from 'moment-timezone';
+import { Image } from 'expo-image';
 
 
 const validateEmail = (email) => {
@@ -99,97 +100,107 @@ const NewAdminScreen = ({ route, navigation }) => {
 
     // Here We need to open just a form to view and edit the gym branch in question.
     // what needs to be edited is the name, 
-    return (
-        <View style={styles.container}>
-            <Video
-                source={require('../../assets/E8Gymvideo2.mp4')}
-                rate={1.0}
-                volume={1.0}
-                isMuted={true}
-                resizeMode="cover"
-                shouldPlay
-                isLooping
-                style={styles.videoBackground}
-            />
-            <View style={{ ...styles.formContainer, marginTop: 50 }}>
-                <Text style={styles.formTitle}>New Admin {branchName}</Text>
-                <ScrollView>
-                    <View style={styles.flexDisplay}>
-                        <Text style={styles.title}>Name</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Admin Name"
-                            onChangeText={(val) => setName(val)}
-                        />
-                    </View>
-                    <View style={styles.flexDisplay}>
-                        <Text style={styles.title}>Info</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Admin Info"
-                            onChangeText={(val) => setInfo(val)}
-                        />
-                    </View>
-                    <View style={styles.flexDisplay}>
-                        <Text style={styles.title}>Email</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Admin Email"
-                            onChangeText={(val) => setEmail(val)}
-                        />
-                    </View>
-                    <View style={styles.flexDisplay}>
-                        <Text style={styles.title}>Password</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Admin Password"
-                            onChangeText={(val) => setPassword(val)}
-                        />
-                    </View>
-                    <View style={styles.flexDisplay}>
-                        <Text style={styles.title}>Phone No.</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Admin Phone Number"
-                            onChangeText={(val) => setPhone(val)}
-                        />
-                    </View>
-
-                    <View style={styles.flexDisplay}>
-                        <Text style={styles.title}>Branch</Text>
-                        <View style={styles.dropdown}>
-                            <Picker
-                                selectedValue={selectedBranch}
-                                onValueChange={(itemValue, itemIndex) => {
-                                    setSelectedBranch(itemValue)
-                                }}
-                            >
-                                <Picker.Item label="Select Branch" value={null} />
-                                {branches.map((branch) => (
-                                    <Picker.Item key={branch.branchID} label={branch.name} value={branch.branchID} />
-                                ))}
-                            </Picker>
+    try {
+        return (
+            <View style={styles.container}>
+                {/* <Video
+                    source={require('../../assets/E8Gymvideo2.mp4')}
+                    rate={1.0}
+                    volume={1.0}
+                    isMuted={true}
+                    resizeMode="cover"
+                    shouldPlay
+                    isLooping
+                    style={styles.videoBackground}
+                /> */}
+                <Image
+                    source={require('../../assets/E8Gymvideo2.gif')} // Local GIF
+                    style={styles.videoBackground}
+                    contentFit="cover"
+                />
+                <View style={{ ...styles.formContainer, marginTop: 50 }}>
+                    <Text style={styles.formTitle}>New Admin {branchName}</Text>
+                    <ScrollView>
+                        <View style={styles.flexDisplay}>
+                            <Text style={styles.title}>Name</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Admin Name"
+                                onChangeText={(val) => setName(val)}
+                            />
                         </View>
-                    </View>
-
-                    <View style={styles.flexDisplay}>
-                        <TouchableOpacity
-                            onPress={SaveBranch}
-                            style={styles.button}
-                        >
-                            <Text style={styles.buttonText}>Submit</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={navigateBack}
-                        >
-                            <Text style={styles.buttonText}>Cancel</Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
+                        <View style={styles.flexDisplay}>
+                            <Text style={styles.title}>Info</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Admin Info"
+                                onChangeText={(val) => setInfo(val)}
+                            />
+                        </View>
+                        <View style={styles.flexDisplay}>
+                            <Text style={styles.title}>Email</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Admin Email"
+                                onChangeText={(val) => setEmail(val)}
+                            />
+                        </View>
+                        <View style={styles.flexDisplay}>
+                            <Text style={styles.title}>Password</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Admin Password"
+                                onChangeText={(val) => setPassword(val)}
+                            />
+                        </View>
+                        <View style={styles.flexDisplay}>
+                            <Text style={styles.title}>Phone No.</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Admin Phone Number"
+                                onChangeText={(val) => setPhone(val)}
+                            />
+                        </View>
+    
+                        <View style={styles.flexDisplay}>
+                            <Text style={styles.title}>Branch</Text>
+                            <View style={styles.dropdown}>
+                                <Picker
+                                    selectedValue={selectedBranch}
+                                    onValueChange={(itemValue, itemIndex) => {
+                                        setSelectedBranch(itemValue)
+                                    }}
+                                >
+                                    <Picker.Item label="Select Branch" value={null} />
+                                    {branches.map((branch) => (
+                                        <Picker.Item key={branch.branchID} label={branch.name} value={branch.branchID} />
+                                    ))}
+                                </Picker>
+                            </View>
+                        </View>
+    
+                        <View style={styles.flexDisplay}>
+                            <TouchableOpacity
+                                onPress={SaveBranch}
+                                style={styles.button}
+                            >
+                                <Text style={styles.buttonText}>Submit</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.button}
+                                onPress={navigateBack}
+                            >
+                                <Text style={styles.buttonText}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
+                </View>
             </View>
-        </View>
-    );
+        );
+    } catch (error) {
+        console.error("Error rendering component:", error);
+        return <Text style={styles.errorText}>Something went wrong. Please try again later.</Text>;
+    }    
 
 }
 const styles = StyleSheet.create({
@@ -236,8 +247,9 @@ const styles = StyleSheet.create({
         bottom: 0,
         right: 0,
         zIndex: -1,
-        width: Dimensions.get('window').width,
-        height: Dimensions.get('window').height,
+        // width: Dimensions.get('window').width,
+        // height: Dimensions.get('window').height,
+        //...StyleSheet.absoluteFillObject, // Ensures full-screen coverage
     },
     button: {
         borderColor: 'white',

@@ -2977,12 +2977,12 @@ function getPrivateIpAddress() {
   return '127.0.0.1';     //0.0.0.0 NOV 29
 }
 
-// app.listen(5000, '0.0.0.0', () => { //'0.0.0.0' NOV 29
-//   console.log(`server started on http://${IP_ADDRESS}:${PORT}`);
-// });
-app.listen(PORT, IP_ADDRESS, () => { //'0.0.0.0' NOV 29
+app.listen(5000, '0.0.0.0', () => { //'0.0.0.0' NOV 29
   console.log(`server started on http://${IP_ADDRESS}:${PORT}`);
 });
+// app.listen(PORT, IP_ADDRESS, () => { //'0.0.0.0' NOV 29
+//   console.log(`server started on http://${IP_ADDRESS}:${PORT}`);
+// });
 
 
 
