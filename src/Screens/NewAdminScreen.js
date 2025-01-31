@@ -247,8 +247,8 @@ const styles = StyleSheet.create({
         bottom: 0,
         right: 0,
         zIndex: -1,
-        // width: Dimensions.get('window').width,
-        // height: Dimensions.get('window').height,
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').height,
         //...StyleSheet.absoluteFillObject, // Ensures full-screen coverage
     },
     button: {
