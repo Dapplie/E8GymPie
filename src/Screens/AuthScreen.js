@@ -6,11 +6,12 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { Video } from 'expo-av';
 import React, { useEffect, useState } from 'react';
-import { Alert, Button, Dimensions, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Button, Dimensions, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import CountryPicker from 'react-native-country-picker-modal';
 import { IP_ADDRESS } from '../../config';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
+import { Image } from 'expo-image';
 
 
 
@@ -170,11 +171,11 @@ const AuthScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ flexGrow: 1 }}>
       <TouchableOpacity onPress={handleSuperAdminLoginPress} style={styles.superAdminIcon}>
         <FontAwesome name="user" size={30} color="white" />
       </TouchableOpacity>
-      <Video
+      {/* <Video
         source={require('../../assets/E8Gymvideo2.mp4')}
         rate={1.0}
         volume={1.0}
@@ -183,6 +184,11 @@ const AuthScreen = () => {
         shouldPlay
         isLooping
         style={styles.videoBackground} // This style should cover the entire screen
+      /> */}
+      <Image
+          source={require('../../assets/E8Gymvideo2.gif')} // Local GIF
+          style={styles.videoBackground}
+          contentFit="cover"
       />
       <View style={styles.overlay} />
 
@@ -384,7 +390,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: -1,
     width: Dimensions.get('window').width, // Use windowWidth to cover the entire width of the screen
-    height: 2200, // Use windowHeight to cover the entire height of the screen
+    //height: Dimensions.get('window').height, // Use windowHeight to cover the entire height of the screen
+    height: windowHeight * 1.1, // 1.5 times the screen height
   },
 
   contentContainer: {
