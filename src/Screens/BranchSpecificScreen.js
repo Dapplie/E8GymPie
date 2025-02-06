@@ -575,7 +575,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
                   borderTopColor: '#303030',
                   paddingTop: 5,
                 }}
-              >
+                >
                 <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
                   Description: {the_class.description}
                 </Text>
@@ -596,47 +596,32 @@ const BranchSpecificScreen = ({ route, navigation }) => {
                   </Text>
                 </View>
                 <Text style={{ fontSize: 14, color: '#E0E0E0' }}>Time:</Text>
-                {Array.isArray(the_class.the_date) && the_class.the_date.length > 0 ? (
-                  the_class.the_date.map((time, index) => (
+            {Array.isArray(the_class.the_date) && the_class.the_date.length > 0 ? (
+              the_class.the_date.map((time, index) => {
+                const participants = the_class.participants && the_class.participants[index] != null ? the_class.participants[index] : 0;
+                const isFull = participants >= the_class.capacity;  // Compare participants with capacity
+
+                return (
+                  <Text key={index} style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
+                    {time},{' '}
+                    Participants: {participants} {' '}
+                    {/* Status based on the number of participants */}
                     <Text
-                      key={index}
-                      style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}
+                      style={{
+                        fontWeight: 'bold',
+                        color: isFull ? 'red' : 'green',  // If full, show red, else green
+                      }}
                     >
-                      {time},{' '}
-                      Participants:{' '}
-                      {the_class.TotalParticipants &&
-                      the_class.TotalParticipants[index] != null
-                        ? the_class.TotalParticipants[index]
-                        : 0}
+                      {isFull ? 'Full' : 'Available'}  {/* Display Full or Available */}
                     </Text>
-                  ))
-                ) : (
-                  <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
-                    No times available
                   </Text>
-                )}
-                <Text
-                  style={{
-                    fontSize: 12,
-                    marginTop: 5,
-                    marginBottom: 5,
-                    fontWeight: 'bold',
-                    color:
-                      the_class.availability === 'Locked'
-                        ? 'orange'
-                        : the_class.participants < the_class.capacity &&
-                          the_class.availability === 'Available'
-                        ? 'green'
-                        : 'red',
-                  }}
-                >
-                  {the_class.availability === 'Locked'
-                    ? 'Locked'
-                    : the_class.participants < the_class.capacity &&
-                      the_class.availability === 'Available'
-                    ? 'Available'
-                    : 'Full'}
-                </Text>
+                );
+              })
+            ) : (
+              <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
+                No times available
+              </Text>
+            )}
                 <TouchableOpacity
                   style={{
                     marginTop: 10,

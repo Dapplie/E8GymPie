@@ -93,27 +93,36 @@ const ClassScheduleScreen = ({ route, navigation }) => {
 
 
   const handleBooking = async (cls, fullName, email, selectedTime) => {
-    if (cls.participants >= cls.capacity) {
-      // setBookingMessage('Cannot book class, it is full');
+    // Get the index of the selectedTime in the participants array (assuming the selectedTime corresponds to an index)
+    const timeIndex = cls.the_date.indexOf(selectedTime);
+  
+    // Check if the selected time exists in the the_date array
+    if (timeIndex === -1) {
+      Alert.alert('Invalid time selection', 'The selected time is invalid.');
+      return;
+    }
+  
+    // Check if the class is full for the selected time (compare participants at the selected time)
+    if (cls.participants[timeIndex] >= cls.capacity) {
       Alert.alert('Cannot book class, it is full.');
       setIsModalVisible(true);
       return;
     }
-
+  
     console.log("Selected time before saving:", selectedTime);
-    console.error(`The CLass Holds ${cls}`)
-    console.error(cls)
+    console.error(`The Class Holds ${cls}`);
+    console.error(cls);
     setSelectedClass(cls);
     setIsModalVisible(true);
     setNeedsRefresh(false);
-
-
+  
     try {
       const fullName = await AsyncStorage.getItem("fullName");
       const email = await AsyncStorage.getItem("email");
       const userId = await AsyncStorage.getItem("userId");
-      console.log(`In Booking Class UserName:${fullName}  Email: ${email}  UserId: ${userId}`);
+      console.log(`In Booking Class UserName: ${fullName}  Email: ${email}  UserId: ${userId}`);
       console.log("Selected time before saving:", selectedTime);
+  
       const response = await fetch(`${IP_ADDRESS}/ClassBooking`, {
         method: 'POST',
         headers: {
@@ -129,35 +138,32 @@ const ClassScheduleScreen = ({ route, navigation }) => {
           branch: branch,
         }),
       });
+  
       try {
-        // Your existing code
-
+        // Your existing code to save purchased classes
         const responseData = await response.json();
         console.log('API Response:', responseData);
-        // Save purchased classes to AsyncStorage
-        console.log("Setting Classes To Storage ")
-        console.log(classes)
+        console.log("Setting Classes To Storage ");
+        console.log(classes);
         await AsyncStorage.setItem('ClassBooking', JSON.stringify(classes));
       } catch (error) {
         console.error('Error saving purchased classes to AsyncStorage:', error);
       }
-
+  
       if (response.ok) {
         setClassBooking(classes);
         console.log('Checkout Successful', 'Your order has been placed successfully!');
-        // Pass booked classes to PurchaseInfoScreen
-        //navigation.navigate('ClassScheduleScreen', { branch });
-        setNeedsRefresh(needsRefresh + 1)
+        setNeedsRefresh(needsRefresh + 1);
         setIsModalVisible(false);
         setIsSuccessModalVisible(true);  // Show success modal
       } else {
-        Alert.alert('Already Booked', ' Thank you for your trust in E8 GYM.');
+        Alert.alert('Already Booked', 'Thank you for your trust in E8 GYM.');
       }
     } catch (error) {
       console.error('Error during checkout:', error);
       Alert.alert('Checkout Error', 'An error occurred during checkout. Please try again later.');
     }
-  };
+  };  
 
 
 
@@ -297,9 +303,34 @@ const ClassScheduleScreen = ({ route, navigation }) => {
                 </View>
 
                 {/* Display Availability */}
-                <Text style={{ color: cls.participants < cls.capacity ? 'green' : 'red', fontWeight: 'bold', textAlign: 'center' }}>
-                  {cls.participants < cls.capacity ? 'Available' : 'Full'}
+                
+                <View>
+        <Text style={{ fontSize: 16, fontWeight: 'bold', color: 'white', marginBottom: 5, marginTop: 5, }}>
+          Availabilities:
+        </Text>
+        {
+          cls.the_date.map((time, index) => {
+            const isFull = cls.participants[index] >= cls.capacity; // Check if the class is full for this time
+            return (
+              <View key={index} style={{ flexDirection: 'row', justifyContent: 'flex-start', marginVertical: 5 }}>
+                <Text style={{ fontSize: 14, textAlign: 'center', color: 'white', paddingRight: 20 }}>
+                  {time} {/* Display the time */}
                 </Text>
+                <Text
+                  style={{
+                    color: isFull ? 'red' : 'green', // Set color based on availability
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                  }}
+                >
+                  {isFull ? 'Full' : 'Available'} {/* Display the status */}
+                </Text>
+              </View>
+            );
+          })
+        }
+    </View>
+
 
 
                 <View style={{ marginTop: 20, borderWidth: 2, borderColor: 'white' }}>

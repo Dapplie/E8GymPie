@@ -622,74 +622,80 @@ const BranchClassScreen = ({ route, navigation }) => {
                 </View>
               </TouchableOpacity>
               <View style={{ borderTopWidth: 1, borderTopColor: '#303030', paddingTop: 10 }}>
+  <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
+    Description: {classItem.description}
+  </Text>
 
+  <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
+    Occupancy: {Array.isArray(classItem.participants)
+      ? classItem.participants.reduce((sum, num) => sum + num, 0)
+      : 0} / {classItem.capacity}
+  </Text>
 
-                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>Description: {classItem.description}</Text>
+  {/* Start and End Date */}
+  <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
+    Start Date: {new Date(classItem.startDate).toLocaleDateString()}
+  </Text>
+  <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 8 }}>
+    End Date: {new Date(classItem.endDate).toLocaleDateString()}
+  </Text>
 
-                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>occupancy: {classItem.participants}/{classItem.capacity}</Text>
+  <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+    <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
+      Day: {classItem.days}
+    </Text>
+  </View>
 
+  {/* Time entries with corresponding participant count and status */}
+  <Text style={{ fontSize: 14, color: '#E0E0E0' }}>Time:</Text>
+  {Array.isArray(classItem.the_date) && classItem.the_date.length > 0 ? (
+    classItem.the_date.map((time, index) => {
+      // Parse the provided time string (e.g., "12:33 PM") into a Date object for display.
+      const [hourMinute, period] = time.split(' ');
+      const [hours, minutes] = hourMinute.split(':');
+      const date = new Date();
+      date.setHours(
+        period === 'PM' ? (parseInt(hours, 10) % 12 + 12) : parseInt(hours, 10) % 12,
+        parseInt(minutes, 10)
+      );
 
-                {/*End and Start Date */}
-                <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
-                  Start Date: {new Date(classItem.startDate).toLocaleDateString()}
-                </Text>
-                <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 8 }}>
-                  End Date: {new Date(classItem.endDate).toLocaleDateString()}
-                </Text>
+      // Use the new participants array for participant count.
+      const participantCount =
+        Array.isArray(classItem.participants) &&
+        classItem.participants[index] != null
+          ? classItem.participants[index]
+          : 0;
 
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                  <Text style={{
-                    fontSize: 14, color: '#E0E0E0', marginRight: 5
-                  }}>Day: {classItem.days}  </Text>
+      // Determine the status based on the participant count and capacity.
+      const status = participantCount < classItem.capacity ? 'Available' : 'Full';
+      const statusStyle = {
+        fontWeight: 'bold',
+        color: status === 'Available' ? 'green' : 'red',
+      };
 
-                </View>
+      return (
+        <Text key={index} style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
+          {date.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+          })}
+          {', Participants: '}{participantCount}
+          {', '}
+          <Text style={statusStyle}>{status}</Text>
+        </Text>
+      );
+    })
+  ) : (
+    <Text style={{ fontSize: 14, color: '#E0E0E0' }}>
+      No times available
+    </Text>
+  )}
 
+  {/* Optionally, an overall status display */}
+ 
 
-                {/* <Text style={{ fontSize: 14, color: '#E0E0E0', marginRight: 8 }}>
-                  All: {classItem.TotalParticipants[0]}
-                </Text> */}
-
-                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>Time:</Text>
-                {Array.isArray(classItem.the_date) && classItem.the_date.length > 0 ? (
-                classItem.the_date.map((time, index) => {
-                  // Parse "12:33 PM" into a Date object
-                  const [hourMinute, period] = time.split(' '); // Split into time and AM/PM
-                  const [hours, minutes] = hourMinute.split(':'); // Split into hours and minutes
-
-                  const date = new Date(); // Create a new Date object for today
-                  date.setHours(
-                    period === 'PM' ? parseInt(hours) % 12 + 12 : parseInt(hours) % 12,
-                    parseInt(minutes)
-                  ); // Set hours and minutes
-
-                  return (
-                    <Text key={index} style={{ fontSize: 14, color: '#E0E0E0', marginRight: 5 }}>
-                      {date.toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true,
-                      })}
-                      {', Participants: '}
-                      {Array.isArray(classItem.TotalParticipants) && classItem.TotalParticipants[index] != null
-                        ? classItem.TotalParticipants[index]
-                        : 0}
-                    </Text>
-                  );
-                })
-              ) : (
-                <Text style={{ fontSize: 14, color: '#E0E0E0' }}>No times available</Text>
-              )}
-
-
-                <Text style={{ fontSize: 12, marginTop: 5, fontWeight: 'bold', color: classItem.availability === 'Locked' ? 'orange' : ((classItem.participants < classItem.capacity) && classItem.availability === 'Available') ? 'green' : 'red' }}>
-                  {classItem.availability === 'Locked' ? 'Locked' : ((classItem.participants < classItem.capacity) && classItem.availability === 'Available') ? 'Available' : 'Full'}
-                </Text>
-
-
-
-
-
-              </View>
+</View>
 
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
                 <TouchableOpacity

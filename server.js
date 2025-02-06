@@ -219,6 +219,7 @@ cron.schedule("0 6 * * *", async () => {
 
 
 
+
 async function updateWeeklyAttendance() {
   let client; // Declare the client here for later closing
 
@@ -456,7 +457,7 @@ app.post('/createClassesNew', async (req, res) => {
         branch: branch.branchID,
         id: classID,
         availability: "Available",
-        participants: 0,
+        participants: Array(the_date.length).fill(0), // Array of zeros matching the_date length
         capacity: capacity,
       });
     });
@@ -522,7 +523,7 @@ app.post('/createClassNew', async (req, res) => {
       branch: branch,
       id: Date.now().toString(),
       availability: "Available",
-      participants: 0,
+      participants: Array(the_date.length).fill(0), // Array of zeros matching the_date length
       capacity: capacity,
     });
 
@@ -805,10 +806,22 @@ app.post('/cancelBooking', async (req, res) => {
 
     const clsId = booking.clsId;
 
-    // Decrement participants number in ClassSchedule using clsId
+    // Fetch the ClassSchedule document using clsId
+    const classSchedule = await collectionClassSchedule.findOne({ _id: new ObjectId(clsId) });
+    if (!classSchedule) {
+      return res.status(404).json({ error: 'ClassSchedule not found' });
+    }
+    
+    // Find the index of the booking's classTime in the the_date array
+    const timeIndex = classSchedule.the_date.indexOf(booking.classTime);
+    if (timeIndex === -1) {
+      return res.status(404).json({ error: 'ClassTime not found in schedule' });
+    }
+
+    // Decrement the participants count for the specific time slot
     const updateResult = await collectionClassSchedule.updateOne(
       { _id: new ObjectId(clsId) },
-      { $inc: { participants: -1 } }
+      { $inc: { [`participants.${timeIndex}`]: -1 } }
     );
 
     if (updateResult.modifiedCount === 0) {
@@ -871,8 +884,10 @@ app.post('/getBooking', async (req, res) => {
 const transporter = nodemailer.createTransport({
   service: 'gmail', // Use your email service provider
   auth: {
-    user: 'dollarrami75@gmail.com', // Your email address
-    pass: 'tdco ogya momt kdee', // Your email password or app-specific password
+    // user: 'dollarrami75@gmail.com', // Your email address
+    // pass: 'tdco ogya momt kdee', // Your email password or app-specific password
+    user: 'e8gymglobal@gmail.com', // Your email address
+    pass: 'nton zgaq qxlv fsji', // Your email password or app-specific password
   },
 });
 
@@ -943,7 +958,14 @@ app.post('/ClassBooking', async (req, res) => {
         '_id': new ObjectId(clsId),
         'availability': 'Available',
       });
-      if (classSchedule && classSchedule.participants < classSchedule.capacity) {
+      if (classSchedule) {
+        // Find the index of the received time in the schedule's the_date array
+        const timeIndex = classSchedule.the_date.indexOf(receivedTime);
+        if (timeIndex === -1) {
+          return res.status(500).json({ "message": "Selected time not available in schedule" });
+        }
+        // Check if the specific time slot has available capacity
+        if (classSchedule.participants[timeIndex] < classSchedule.capacity) {
         const bookingResult = await collectionClassBooking.insertOne({
           username,
           email,
@@ -955,9 +977,10 @@ app.post('/ClassBooking', async (req, res) => {
         });
 
         if (bookingResult && bookingResult.insertedId) {
+          // Increment the participants count for the specific time slot
           await collectionClassSchedule.updateOne(
             { _id: new ObjectId(clsId) },
-            { $inc: { participants: 1 } }
+            { $inc: { [`participants.${timeIndex}`]: 1 } }
           );
 
           // Format the picked time for email
@@ -969,8 +992,8 @@ app.post('/ClassBooking', async (req, res) => {
             from: 'youremail@gmail.com',
             to: [...adminEmails, customerEmail, superadminEmail].join(','),
             subject: 'New Class Booking',
-            html: `
-              <div style="background-color: #ffffff; color: #333333; font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+              html: 
+              `<div style="background-color: #ffffff; color: #333333; font-family: Arial, sans-serif; padding: 20px; text-align: center;">
                 <img src="https://i.imgur.com/uGYioKW.jpeg" alt="E8 Gym Logo" style="max-width: 200px; margin-bottom: 20px;" />
                 <p style="font-size: 16px; line-height: 1.5; color: #333333;">
                   Hello <strong>${username}</strong>,
@@ -988,8 +1011,7 @@ app.post('/ClassBooking', async (req, res) => {
                   If you need any assistance with your booking, please email us at 
                   <a href="mailto:Support@e8gym.com" style="color: #007bff; text-decoration: none;">Support@e8gym.com</a>.
                 </p>
-              </div>
-            `,
+              </div>`,
           };
 
           transporter.sendMail(mailOptions, (error, info) => {
@@ -1001,6 +1023,7 @@ app.post('/ClassBooking', async (req, res) => {
           });
 
           return res.status(200).json({ "message": "Booked Class Successfully" });
+        }
         }
       }
     }
@@ -1093,7 +1116,14 @@ app.post('/ClassBooking', async (req, res) => {
         '_id': new ObjectId(clsId),
         'availability': 'Available',
       });
-      if (classSchedule && classSchedule.participants < classSchedule.capacity) {
+        if (classSchedule) {
+          // Find the index of the received time in the schedule's the_date array
+          const timeIndex = classSchedule.the_date.indexOf(receivedTime);
+          if (timeIndex === -1) {
+            return res.status(500).json({ "message": "Selected time not available in schedule" });
+          }
+          // Check if the specific time slot has available capacity
+          if (classSchedule.participants[timeIndex] < classSchedule.capacity) {
         const bookingResult = await collectionClassBooking.insertOne({
           username,
           email,
@@ -1107,7 +1137,7 @@ app.post('/ClassBooking', async (req, res) => {
         if (bookingResult && bookingResult.insertedId) {
           await collectionClassSchedule.updateOne(
             { _id: new ObjectId(clsId) },
-            { $inc: { participants: 1 } }
+            { $inc: { [`participants.${timeIndex}`]: 1 } }
           );
 
           // Format the picked time for email
@@ -1150,6 +1180,7 @@ app.post('/ClassBooking', async (req, res) => {
 
           return res.status(200).json({ "message": "Booked Class Successfully" });
         }
+        }
       }
     }
     return res.status(500).json({ "message": "Already Booked or Class Full" });
@@ -1189,13 +1220,31 @@ app.post('/CancelBooking', async (req, res) => {
     await client.connect();
     const db = client.db();
 
-    // Connect to the desired collection
+  // Connect to the desired collection (branch-specific classes collection)
   const collection = db.collection(branch + 'Classes');
     
-    // Update the number of participants in the class
+      // Retrieve the booking document from the ClassBooking collection to get the booking time
+      const bookingCollection = db.collection('ClassBooking');
+      const objectId = new ObjectId(bookingId);
+      const booking = await bookingCollection.findOne({ _id: objectId });
+      if (!booking) {
+        return res.status(404).json({ error: 'Booking not found' });
+      }
+
+      // Find the index of the booking's classTime in the the_date array of the class schedule
+      const scheduleDoc = await collection.findOne({ name: className });
+      if (!scheduleDoc) {
+        return res.status(404).json({ error: 'Class schedule not found' });
+      }
+      const timeIndex = scheduleDoc.the_date.indexOf(booking.classTime);
+      if (timeIndex === -1) {
+        return res.status(404).json({ error: 'Booking time not found in class schedule' });
+      }
+
+      // Update the number of participants in the class for the specific time slot
     const result = await collection.updateOne(
-      { 'name': className },
-      { $inc: { 'participants': -1 } }
+      { name: className },
+      { $inc: { [`participants.${timeIndex}`]: -1 } }
     );
     if (result.modifiedCount === 1) {
       console.log('Number of participants updated for class:', className);
@@ -1204,12 +1253,11 @@ app.post('/CancelBooking', async (req, res) => {
     }
 
     // Remove the booking information from the MongoDB collection
-  const bookingCollection = db.collection('ClassBooking');
-    const objectId = new ObjectId(bookingId);
-  const deleteResult = await bookingCollection.deleteOne({ _id: objectId });
 
-  if (deleteResult.deletedCount === 1) {
-    console.log('Booking information removed from MongoDB');
+    const deleteResult = await bookingCollection.deleteOne({ _id: objectId });
+
+    if (deleteResult.deletedCount === 1) {
+      console.log('Booking information removed from MongoDB');
       return res.status(200).json({ message: 'Booking canceled successfully' });
     } else {
       console.error('Failed to remove booking information');
@@ -1409,8 +1457,10 @@ app.post('/SignUpScreen', async (req, res) => {
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-          user: 'dollarrami75@gmail.com',
-          pass: 'tdco ogya momt kdee'
+          // user: 'dollarrami75@gmail.com',
+          // pass: 'tdco ogya momt kdee'
+          user: 'e8gymglobal@gmail.com',
+          pass: 'nton zgaq qxlv fsji'
         }
       });
 
@@ -2209,12 +2259,13 @@ app.get('/save_new_branch_information', async (req, res) => {
       ])
       .toArray();
 
-    // Duplicate entities with updated "branch" field
+    // Duplicate entities with updated "branch" field and initialize participants array
     const duplicatedEntities = uniqueEntities.map(({ _id, ...entity }) => ({
       ...entity,
       branch: newBranchID,
+      participants: Array.isArray(entity.the_date) ? new Array(entity.the_date.length).fill(0) : [], // Ensure participants array matches the_date length
     }));
-    
+
 
     if (duplicatedEntities.length > 0) {
       await classScheduleCollection.insertMany(duplicatedEntities);
@@ -2564,12 +2615,12 @@ app.get('/get_classes_for_branch', async (req, res) => {
     // Fetch branch details (including the image)
     const branch = await branchCollection.findOne({ branchID: id }, { projection: { image: 1, _id: 0 } });
 
-    // Fetch classes for the given branch
+    // Fetch classes for the given branch, including endDate
     const classes = await classScheduleCollection.find({ branch: id }).toArray();
 
-    // Loop through each class to gather participant counts
+    // Loop through each class to gather participant counts and add endDate
     for (const classItem of classes) {
-      const { the_date, branch } = classItem; // Assuming the_date is an array of time strings like "12:33PM"
+      const { the_date, branch, endDate, participants } = classItem; // Assuming the_date is an array of time strings like "12:33PM"
     
       // Count TotalParticipants for each date-specific time for the branch
       const counts = await Promise.all(the_date.map(async (time) => {
@@ -2581,8 +2632,10 @@ app.get('/get_classes_for_branch', async (req, res) => {
         return count;
       }));
 
-      // Add the participant counts to the class item
+      // Add the participant counts and endDate to the class item
       classItem.TotalParticipants = counts;
+      classItem.endDate = endDate;  // Add endDate to the response
+      classItem.participants = participants;
     }
 
     return res.status(200).json({
@@ -2740,44 +2793,79 @@ app.put('/update_class', async (req, res) => {
 
 //Updates already existing class by clicking on it from superadmin manage branches manage classes > class title
 app.put('/update_classNew', async (req, res) => {
+  const {
+    className,
+    instructor,
+    id,
+    availability,
+    startDate,
+    endDate,
+    description,
+    capacity,
+    days,
+    branch,
+    the_date
+  } = req.body;
+  
+  console.log(req.body);
 
-  const { className, instructor, id, availability, startDate, endDate, description, capacity, days, branch, the_date } = req.body;
-  console.log(req.body)
-
-  // MongoDB URI
+  // MongoDB URI and client initialization
   const client = new MongoClient(uri);
 
   try {
     // Connect to MongoDB
     await client.connect();
     const db = client.db(); // Use the default database
+    const collection = db.collection('ClassShcedule');
 
-    const collectionName = 'ClassShcedule';
-    const collection = db.collection(collectionName);
+    // Retrieve the existing document using id and branch
+    const existingDoc = await collection.findOne({ id: id, branch: branch });
+    
+    // Prepare defaults in case the document or arrays don't exist
+    const oldDates = (existingDoc && existingDoc.the_date) ? existingDoc.the_date : [];
+    const oldParticipants = (existingDoc && existingDoc.participants) ? existingDoc.participants : [];
 
-    statos = await collection.updateOne({ 'id': id, 'branch': branch }, {
-      '$set': {
-        'className': className,
-        'instructor': instructor,
-        'the_date': the_date,
-        'name': className,
-        'availability': availability,
-        'description': description,
-        'capacity': capacity,
-        'startDate': startDate,
-        'endDate': endDate,
-        'days': days
-      }
+    // Build new participants array:
+    // For each date in the new the_date array, check if it exists in the old the_date array.
+    // If it exists, copy the corresponding participant number (or default to 0 if for some reason it's missing),
+    // otherwise, set the participant number to 0.
+    const newParticipants = the_date.map(date => {
+      const idx = oldDates.indexOf(date);
+      return (idx > -1 && typeof oldParticipants[idx] === 'number')
+        ? oldParticipants[idx]
+        : 0;
     });
-    console.log(statos)
-    return res.status(200).json({ 'success': true });
 
+    // Now update the document with the new data and new participants array.
+    const updateResult = await collection.updateOne(
+      { id: id, branch: branch },
+      {
+        $set: {
+          className: className,
+          instructor: instructor,
+          the_date: the_date,
+          participants: newParticipants, // update participants accordingly
+          name: className,
+          availability: availability,
+          description: description,
+          capacity: capacity,
+          startDate: startDate,
+          endDate: endDate,
+          days: days
+        }
+      }
+    );
+
+    console.log(updateResult);
+    return res.status(200).json({ success: true });
+    
   } catch (error) {
-    return res.status(500).json({ error: 'Internal Server Error Updating Class' })
+    console.error('Error updating class:', error);
+    return res.status(500).json({ error: 'Internal Server Error Updating Class' });
   } finally {
     // Close the MongoDB connection
     await client.close();
-    console.log('update_classnew: Database connection closed.');
+    console.log('update_classNew: Database connection closed.');
   }
 });
 
