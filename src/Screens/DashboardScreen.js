@@ -116,7 +116,7 @@ const DashboardScreen = ({ route, navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <Header />
-      <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 10}}>
+      <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 0}}>
       <View>
         {/* Display User Image */}
         {image ? (
