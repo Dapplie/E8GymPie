@@ -4,7 +4,7 @@
     "slug": "e8gym",
     "version": "1.0.6",
     "orientation": "portrait",
-    "icon": "assets/logo2.JPG",
+    "icon": "assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "assets/splash.png",
@@ -20,6 +20,10 @@
     },
     "android": {
       "versionCode": 7,
+      "adaptiveIcon": {
+        "foregroundImage": "assets/logo_1.png",
+        "backgroundColor": "#ffffff"
+      },
 
       "package": "com.julianode.E8Gym",
       "permissions": [
