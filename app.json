@@ -20,10 +20,7 @@
     },
     "android": {
       "versionCode": 7,
-      "adaptiveIcon": {
-        "foregroundImage": "assets/logo_1.png",
-        "backgroundColor": "#ffffff"
-      },
+    
 
       "package": "com.julianode.E8Gym",
       "permissions": [
