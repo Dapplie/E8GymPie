@@ -535,17 +535,17 @@ const ManageBranchesScreen = ({ route, navigation }) => {
         {Branches.map(branch => (
           <View key={branch.branchID} style={styles.branchCard}>
             <TouchableOpacity
-              // key={branch.branchID}
-              // style={styles.branchCard}
               activeOpacity={0.5}
               onPress={() => goToBranchDetail(branch)}
             >
-              <Image source={branchImages[Math.floor(Math.random() * branchImages.length)]} style={styles.branchImage} />
+              <Image 
+                source={branch.image ? { uri: branch.image } : branchImages[Math.floor(Math.random() * branchImages.length)]} 
+                style={styles.branchImage} 
+              />
               <Text style={styles.branchName}>{branch.name}</Text>
             </TouchableOpacity>
-            {/* Faysal */}
+
             <TouchableOpacity
-              // key={branch.branchID + "ID01"}
               activeOpacity={0.3}
               onPress={() => {
                 console.log("Manage Classes");
@@ -553,7 +553,6 @@ const ManageBranchesScreen = ({ route, navigation }) => {
               }}
             >
               <Text style={{ textAlign: 'center', color: 'white' }}>Manage Classes</Text>
-
             </TouchableOpacity>
           </View>
         ))}

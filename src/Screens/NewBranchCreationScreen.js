@@ -12,12 +12,13 @@ const NewBranchCreationScreen = ({route,navigation}) => {
     const [branchName,setBranchName]=useState()
     const [branchLocation,setBranchLocation]=useState()
     const [phone,setPhone]=useState()
+    const [image,setImage]=useState()
     
     const SaveBranch = () =>{
         // // here we need to submit the branch details back to the server for savings.
         // console.log(`Saving Branch of name ${branchName}`)
         // console.log(branchName)
-        fetch(`${IP_ADDRESS}/save_new_branch_information?name=${branchName}&location=${branchLocation}&phone=${phone}`)
+        fetch(`${IP_ADDRESS}/save_new_branch_information?name=${branchName}&location=${branchLocation}&phone=${phone}&image=${image}`)
         .then(res =>{
             if (res.status == 200){
                return res.json()
@@ -75,6 +76,14 @@ const NewBranchCreationScreen = ({route,navigation}) => {
                             style={styles.input}
                             placeholder="Branch Phone Number"
                             onChangeText={val => setPhone(val)}
+                        />
+                    </View>
+                    <View style={styles.formGroup}>
+                        <Text style={styles.label}>Image</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Branch Image Link"
+                            onChangeText={val => setImage(val)}
                         />
                     </View>
                     <View style={styles.buttonGroup}>

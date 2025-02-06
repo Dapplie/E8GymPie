@@ -562,7 +562,7 @@ const BranchClassScreen = ({ route, navigation }) => {
       {branchDetails && (
         <View style={{ ...styles.branchContainer, marginHorizontal: 10, borderColor: 'white', borderWidth: 1 }}>
           <Text style={styles.branchName}>{branchDetails.name}</Text>
-          <Image source={branchimages[Math.floor(Math.random() * branchimages.length)]} style={styles.image} />
+          <Image source={{ uri: branchDetails.image }} style={styles.image} />
           <View style={styles.detailsContainer}>
             <Text style={styles.detailText}>Location: {branchDetails.location}</Text>
             {/* <Text style={styles.detailText}>branchID: {branchDetails.branchID}</Text> */}
@@ -885,7 +885,7 @@ const BranchDetailScreen = ({ route, navigation }) => {
           <View style={styles.branchContainer}>
             <TouchableOpacity onPress={goToEditScreen}>
               <Text style={styles.branchName}>{branchDetails.name}</Text>
-              <Image source={branchimages[Math.floor(Math.random() * branchimages.length)]} style={styles.image} />
+              <Image source={{uri: branchDetails.image} } style={styles.image} />
               <View style={styles.detailsContainer}>
                 <Text style={styles.detailText}>Location: {branchDetails.location}</Text>
                 <Text style={styles.detailText}>branchID: {branchDetails.branchID}</Text>

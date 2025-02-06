@@ -474,7 +474,7 @@ const BranchSpecificScreen = ({ route, navigation }) => {
           activeOpacity={1}
         >
           <Image
-            source={require("../../assets/branchAjalt.jpg")}
+            source={{uri: branchData.image}}
             style={styles.branchImage}
           />
           <Text style={styles.branchName}>{branchData.name}</Text>

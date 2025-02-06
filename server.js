@@ -1914,6 +1914,38 @@ app.post('/OwnNow', async (req, res) => {
   }
 });
 
+
+
+app.get('/OwnNow', async (req, res) => {
+  try {
+    // Connect to MongoDB
+    const client = new MongoClient(uri);
+    await client.connect();
+    console.log('Connected to OwnNow Database.');
+
+    const db = client.db(); // Use the default database
+    const collection = db.collection('OwnNow'); // Use the same collection
+
+    // Fetch all documents
+    const data = await collection.find({}).toArray();
+
+    // Close the MongoDB connection
+    await client.close();
+    console.log('OwnNow Database connection closed.');
+
+    if (data.length > 0) {
+      res.json(data);
+    } else {
+      res.status(404).json({ error: 'No data found in OwnNow' });
+    }
+
+  } catch (error) {
+    console.error('Error fetching OwnNow data:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 /////////////////////////////////////////////
 
 //noDB
@@ -2146,7 +2178,7 @@ app.get('/save_new_branch_information', async (req, res) => {
     await client.connect();
     const db = client.db();
 
-    const { name, location, phone } = req.query;
+    const { name, location, phone, image } = req.query; // Accept 'image' parameter
     const branchesCollection = db.collection('adminbranches');
     const classScheduleCollection = db.collection('ClassShcedule');
 
@@ -2159,6 +2191,7 @@ app.get('/save_new_branch_information', async (req, res) => {
       users: [],
       profit: 0,
       branchID: newBranchID,
+      image: image || "", // Store image string or empty if not provided
     });
 
     // Fetch all unique entities from ClassSchedule based on "name"
@@ -2524,13 +2557,17 @@ app.get('/get_classes_for_branch', async (req, res) => {
 
     const classScheduleCollection = db.collection('ClassShcedule');
     const classBookingCollection = db.collection('ClassBooking');
+    const branchCollection = db.collection('adminbranches'); // Collection containing branch details
 
     console.log(`Fetching classes for branch ID: ${id}`);
+
+    // Fetch branch details (including the image)
+    const branch = await branchCollection.findOne({ branchID: id }, { projection: { image: 1, _id: 0 } });
 
     // Fetch classes for the given branch
     const classes = await classScheduleCollection.find({ branch: id }).toArray();
 
-    // Loop through each class to gather participant counts specific to the branch
+    // Loop through each class to gather participant counts
     for (const classItem of classes) {
       const { the_date, branch } = classItem; // Assuming the_date is an array of time strings like "12:33PM"
     
@@ -2548,7 +2585,12 @@ app.get('/get_classes_for_branch', async (req, res) => {
       classItem.TotalParticipants = counts;
     }
 
-    return res.status(200).json({ success: true, classes });
+    return res.status(200).json({
+      success: true,
+      branchImage: branch?.image || null, // Include branch image in response
+      classes
+    });
+
   } catch (error) {
     console.error('Error fetching classes for branch:', error);
     return res.status(500).json({ error: 'Internal Server Error Fetching Classes For Branch' });

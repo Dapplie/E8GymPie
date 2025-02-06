@@ -116,7 +116,7 @@ const DashboardScreen = ({ route, navigation }) => {
   return (
     <ScrollView style={styles.container}>
       <Header />
-      <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-start', padding: 20}}>
+      <View style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 10}}>
       <View>
         {/* Display User Image */}
         {image ? (
@@ -331,13 +331,13 @@ const DashboardScreen = ({ route, navigation }) => {
 
 const styles = StyleSheet.create({
   userImage: {
-    width: 55,
-    height: 55,
-    borderRadius: 25,
+    width: 65,
+    height: 65,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: '#fff',
     zIndex: 2,
-    marginRight: 10,
+    marginBottom: 10,
   },
   container: {
     flex: 1,

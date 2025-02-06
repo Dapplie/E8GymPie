@@ -69,51 +69,21 @@ const Header = ({ title }) => {
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={navigateToAccountScreen}>
             <View style={styles.userIconContainer}>
-              {/* <Image
-                source={require('../../assets/user.png')}
-                style={[styles.userIcon, styles.whiteBorder]}
-                resizeMode="contain"
-              /> */}
               <Text style={[styles.menuText, styles.whiteText]}>Account</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={navigateToContactUs}>
             <View style={styles.settingsIconContainer}>
-              {/* <Image
-                source={require('../../assets/chat.png')}
-                style={[styles.userIcon, styles.whiteBorder]}
-                resizeMode="contain"
-              /> */}
               <Text style={[styles.menuText, styles.whiteText]}>Contact Us</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={navigateToSettingsScreen}>
             <View style={styles.settingsIconContainer}>
-              {/* <Image
-                source={require('../../assets/settings.png')}
-                style={[styles.userIcon, styles.whiteBorder]}
-                resizeMode="contain"
-              /> */}
               <Text style={[styles.menuText, styles.whiteText]}>Settings</Text>
             </View>
           </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.menuItem} onPress={navigateToPurchaseInfoScreen}>
-            <View style={styles.settingsIconContainer}>
-              <Image
-                source={require('../../assets/purchase.png')}
-                style={[styles.userIcon, styles.whiteBorder]}
-                resizeMode="contain"
-              />
-              <Text style={[styles.menuText, styles.whiteText]}>List</Text>
-            </View>
-          </TouchableOpacity> */}
           <TouchableOpacity style={styles.menuItem} onPress={handleSignOut}>
             <View style={styles.settingsIconContainer}>
-              {/* <Image
-                source={require('../../assets/signout.png')}
-                style={[styles.userIcon, styles.whiteBorder]}
-                resizeMode="contain"
-              /> */}
               <Text style={[styles.menuText, styles.whiteText]}>Sign Out</Text>
             </View>
           </TouchableOpacity>
