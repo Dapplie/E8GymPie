@@ -95,7 +95,7 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file('@dapss_e8gym.jks')
+            storeFile file('@dapss__e8gym.jks')
             storePassword '6e4edfb2aff6923ff12ce2098379d84b'
             keyAlias '50f3e3e80d3f51f79ce321d77b47ce32'
             keyPassword '768c39693cb833d50166b9b480b0d101'
